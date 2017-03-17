@@ -5,7 +5,7 @@
 #include <iostream>
 #include <time.h>
 using namespace std;
-
+//hhhhhhhhh
 const string APPTITLE = "Game Loop";
 HWND window;
 HDC device;
