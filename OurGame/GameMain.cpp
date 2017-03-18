@@ -44,6 +44,9 @@ void Game_Update(HWND window)
 
     if (KEY_DOWN(VK_ESCAPE))
         PostMessage(window, WM_DESTROY, 0, 0);
+
+  
+
 }
 
 /*

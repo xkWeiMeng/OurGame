@@ -99,8 +99,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    Game_Render(window, device);
-
     while (!Gameover)
     {
         //process Windows events
@@ -109,9 +107,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
-
-        //process game loop
-        Game_Update(window);
+        else
+        {
+            DWORD timeInPerFrame = 1000.0f / Global::Window::constFps;    //计算每帧的频率
+            DWORD timeBegin = GetTickCount();           //循环开始的时间  
+            Game_Update(window);                        //directX循环
+            Game_Render(window, device);                //directX渲染
+            DWORD timePhase = GetTickCount() - timeBegin; //循环耗费的时间
+            if (timePhase < timeInPerFrame)                //循环耗费的时间<每帧的时间
+            {
+                Sleep(DWORD(timeInPerFrame - timePhase)); //将剩余的时间等待
+            }
+        }
     }
 
     //free game resources

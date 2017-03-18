@@ -1,14 +1,15 @@
 #pragma once
 #include<iostream>
+#include<Windows.h>
 using namespace std;
 enum GAME_STATE
 {
     //无任何场景（初始状态）
-    None = -1,
+    None = 0,
     //欢迎场景
-    Home = 0,
+    Home = 1,
     //游戏场景
-    Playing = 1
+    Playing = 2
 };
 namespace Global {
     namespace Window {
@@ -16,5 +17,6 @@ namespace Global {
         const int ScreenWidth = 1024;
         const int ScreenHeight = 768;
         const bool FULLSCREEN = false;
+        const float constFps = 60.0f;
     }
 }

@@ -30,6 +30,22 @@ namespace Graph {
         DeleteDC(hdcImage);
         DeleteObject((HBITMAP)image);
     }
+    float GetFPS()
+    {
+        static float  fps = 0;
+        static int    frameCount = 0;
+        static float  currentTime = 0.0f;//当前时间
+        static float  lastTime = 0.0f;//持续时间
 
-
+        frameCount++;//每调用一次Get_FPS()函数，帧数+1
+        currentTime = timeGetTime()*0.001f;//获取系统时间,并转化成秒为单位
+                                           //经过了一秒，就进行一次FPS的计算和持续时间的更新，并将帧数值清零
+        if (currentTime - lastTime > 1.0f) //将时间控制在1秒钟
+        {
+            fps = (float)frameCount / (currentTime - lastTime);//计算这1秒钟的FPS值
+            lastTime = currentTime; //将当前时间currentTime作为下一秒的基准时间
+            frameCount = 0;//将本次帧数frameCount值清零
+        }
+        return fps;
+    }
 }
