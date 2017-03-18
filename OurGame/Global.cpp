@@ -1,4 +1,4 @@
 #include"Global.h"
 namespace Global {
-    bool Gameover = false;
+    GAME_STATE Game_State = GAME_STATE::None;
 }

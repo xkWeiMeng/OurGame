@@ -12,6 +12,7 @@ using namespace std;
 
 HWND window;
 HDC device;
+bool Gameover = false;
 
 // Window callback function
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -19,7 +20,8 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_DESTROY:
-        Global::Gameover = true;
+        Game_End(hWnd, device);
+        Gameover = true;
         PostQuitMessage(0);
         break;
     case WM_PAINT:
@@ -92,11 +94,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!InitInstance(hInstance, nCmdShow)) return 0;
 
     //initialize the game
-    if (!Game_Init(window)) return 0;
+    if (!Game_Init(window)) {
+        MessageBox(window, "”Œœ∑≥ı ºªØ ß∞‹", Global::Window::GameTitle.c_str(), MB_OK);
+        return 0;
+    }
 
     Game_Render(window, device);
 
-    while (!Global::Gameover)
+    while (!Gameover)
     {
         //process Windows events
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

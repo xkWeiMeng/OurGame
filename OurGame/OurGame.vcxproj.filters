@@ -31,6 +31,18 @@
     <Filter Include="源文件\Tools">
       <UniqueIdentifier>{8aba1728-fca5-4a17-a17e-d4c5218ad388}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\DirectX">
+      <UniqueIdentifier>{fad90c4e-0833-4d38-ac97-9113c5106d59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\DirectX">
+      <UniqueIdentifier>{3f992eb4-e6e8-4c30-857c-aa47619ebcec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Scenes">
+      <UniqueIdentifier>{87c06869-ee37-4e76-9b8d-e8a2c5ff5e58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Scenes">
+      <UniqueIdentifier>{6940d137-923e-4971-be50-fc7ab217a0dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -45,6 +57,15 @@
     <ClCompile Include="Graph.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
+    <ClCompile Include="DirectX.cpp">
+      <Filter>源文件\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectSound.cpp">
+      <Filter>源文件\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="HomeScene.cpp">
+      <Filter>源文件\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameMain.h">
@@ -58,6 +79,21 @@
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX.h">
+      <Filter>头文件\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectSound.h">
+      <Filter>头文件\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes.h">
+      <Filter>头文件\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>头文件\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="HomeScene.h">
+      <Filter>头文件\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
