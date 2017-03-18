@@ -4,72 +4,14 @@
 #include <windows.h>//21314124
 #include <iostream>
 #include <time.h>
+
+#include"GameMain.h"
+#include"Global.h"
+
 using namespace std;
-//hhhhhhhhh
-const string APPTITLE = "Game Loop";
+
 HWND window;
 HDC device;
-bool gameover = false;
-
-// Loads and draws a bitmap from a file and then frees the memory
-// (not really suitable for a game loop but it's self contained)
-void DrawBitmap(char *filename, int x, int y)
-{
-    //load the bitmap image
-    HBITMAP image = (HBITMAP)LoadImage(0, filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
-    //read the bitmap's properties
-    BITMAP bm;
-    GetObject(image, sizeof(BITMAP), &bm);
-
-    //create a device context for the bitmap
-    HDC hdcImage = CreateCompatibleDC(device);
-    SelectObject(hdcImage, image);
-
-    //draw the bitmap to the window (bit block transfer)
-    BitBlt(
-        device,                  //destination device context
-        x, y,                    //x,y position
-        bm.bmWidth, bm.bmHeight, //size of source bitmap
-        hdcImage,                //source device context
-        0, 0,                    //upper-left source position
-        SRCCOPY);                //blit method
-
-                                 //delete the device context and bitmap
-    DeleteDC(hdcImage);
-    DeleteObject((HBITMAP)image);
-}
-
-// Startup and loading code goes here
-bool Game_Init()
-{
-    //start up the random number generator
-    srand(time(NULL));
-
-    return 1;
-}
-
-// Update function called from inside game loop
-void Game_Run()
-{
-    if (gameover == true) return;
-
-    //get the drawing surface
-    RECT rect;
-    GetClientRect(window, &rect);
-
-    //draw bitmap at random location
-    int x = rand() % (rect.right - rect.left);
-    int y = rand() % (rect.bottom - rect.top);
-
-}
-
-// Shutdown code
-void Game_End()
-{
-    //free the device
-    ReleaseDC(window, device);
-}
 
 // Window callback function
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -77,12 +19,11 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_DESTROY:
-        gameover = true;
+        Global::Gameover = true;
         PostQuitMessage(0);
         break;
     case WM_PAINT:
-        DrawBitmap("0.bmp", 0, 0);
-
+        Game_Render(hWnd, device);
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -104,7 +45,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = APPTITLE.c_str();
+    wc.lpszClassName = Global::GameTitle.c_str();
     wc.hIconSm = NULL;
 
     //set up the window with the class info
@@ -116,8 +57,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     //create a new window
     window = CreateWindow(
-        APPTITLE.c_str(),              //window class
-        APPTITLE.c_str(),              //title bar
+        Global::GameTitle.c_str(),              //window class
+        Global::GameTitle.c_str(),              //title bar
         WS_OVERLAPPEDWINDOW,   //window style
         CW_USEDEFAULT,         //x position of window
         CW_USEDEFAULT,         //y position of window
@@ -153,10 +94,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //initialize the game
     if (!Game_Init()) return 0;
 
-    // main message loop
-    DrawBitmap("0.bmp", 0, 0);
+    Game_Render(window, device);
 
-    while (!gameover)
+    while (!Global::Gameover)
     {
         //process Windows events
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -166,11 +106,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
 
         //process game loop
-        Game_Run();
+        Game_Update(window);
     }
 
     //free game resources
-    Game_End();
+    Game_End(window, device);
 
     return msg.wParam;
 }
