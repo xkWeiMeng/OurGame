@@ -43,8 +43,7 @@ bool HomeScene::Create_Background()
         D3DTEXF_NONE);
 
     //get pointer to the back buffer
-    d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO,
-        &backbuffer);
+    d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO,&backbuffer);
 
     //remove image
     image->Release();

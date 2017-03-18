@@ -5,6 +5,7 @@
 class Scene
 {
 public:
+    virtual ~Scene() {};
     virtual bool Init() { return true; };
     virtual void End() {};
     virtual void Render() {};

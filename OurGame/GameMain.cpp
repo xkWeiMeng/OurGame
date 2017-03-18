@@ -4,6 +4,7 @@
 
 //当前游戏的场景
 Scene *scene = NULL;
+
 //当前游戏状态
 GAME_STATE Game_State;
 
@@ -28,8 +29,8 @@ bool Game_Init(HWND window)
 */
 void Game_Update(HWND window)
 {
-    if (scene != NULL)
-        scene->Update();
+    //if (scene != NULL)
+        //scene->Update();
 
     //check for escape key (to exit program)
 
