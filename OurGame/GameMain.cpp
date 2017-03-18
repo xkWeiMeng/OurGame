@@ -18,6 +18,7 @@ bool Game_Init(HWND window)
         ShowMessage("Direct3D初始化失败");
         return false;
     }
+
     //切换到欢迎场景
     Game_ChangeScene(GAME_STATE::Home);
 
@@ -78,8 +79,10 @@ void Game_ChangeScene(GAME_STATE to)
         {
         case GAME_STATE::Home:
             scene = new HomeScene();
+            //调用场景的初始化函数
             if (!scene->Init())
             {
+                //如果场景初始化出错则结束游戏
                 EndApplication();
             }
             break;
