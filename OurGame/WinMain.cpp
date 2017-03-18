@@ -45,7 +45,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = Global::GameTitle.c_str();
+    wc.lpszClassName = Global::Window::GameTitle.c_str();
     wc.hIconSm = NULL;
 
     //set up the window with the class info
@@ -57,13 +57,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     //create a new window
     window = CreateWindow(
-        Global::GameTitle.c_str(),              //window class
-        Global::GameTitle.c_str(),              //title bar
+        Global::Window::GameTitle.c_str(),              //window class
+        Global::Window::GameTitle.c_str(),              //title bar
         WS_OVERLAPPEDWINDOW,   //window style
         CW_USEDEFAULT,         //x position of window
         CW_USEDEFAULT,         //y position of window
-        640,                   //width of the window
-        480,                   //height of the window
+        Global::Window::ScreenWidth,                   //width of the window
+        Global::Window::ScreenHeight,                   //height of the window
         NULL,                  //parent window
         NULL,                  //menu
         hInstance,             //application instance
@@ -92,7 +92,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!InitInstance(hInstance, nCmdShow)) return 0;
 
     //initialize the game
-    if (!Game_Init()) return 0;
+    if (!Game_Init(window)) return 0;
 
     Game_Render(window, device);
 

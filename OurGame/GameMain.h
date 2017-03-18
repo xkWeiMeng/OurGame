@@ -1,6 +1,6 @@
 #pragma once
 #include<Windows.h>
-bool Game_Init();
+bool Game_Init(HWND window);
 void Game_Update(HWND window);
 void Game_End(HWND window, HDC device);
 void Game_Render(HWND window, HDC device);
