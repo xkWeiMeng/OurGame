@@ -95,5 +95,8 @@
     <ClInclude Include="HomeScene.h">
       <Filter>头文件\Scenes</Filter>
     </ClInclude>
+    <ClInclude Include="WinMain.h">
+      <Filter>头文件\Main</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

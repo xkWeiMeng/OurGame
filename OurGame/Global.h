@@ -1,6 +1,10 @@
 #pragma once
 #include<iostream>
 #include<Windows.h>
+#include"Resource.h"
+#include"WinMain.h"
+#include"DirectX.h"
+
 using namespace std;
 enum GAME_STATE
 {

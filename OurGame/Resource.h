@@ -3,5 +3,7 @@
 using namespace std;
 //所有资源的路径
 namespace Resource {
-    char* const Backgroud = "Resources\\0.bmp";
+    namespace Home {
+        char* const Backgroud = "Resources\\Home\\Background.jpg";
+    }
 }

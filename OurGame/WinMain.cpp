@@ -1,13 +1,11 @@
 // Beginning Game Programming
 // Chapter 2 - Game Loop project
 
-#include <windows.h>//21314124
+#include <windows.h>
 #include <iostream>
 #include <time.h>
-
-#include"GameMain.h"
 #include"Global.h"
-
+#include"GameMain.h"
 using namespace std;
 
 HWND window;
@@ -20,7 +18,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_DESTROY:
-        Game_End(hWnd, device);
         Gameover = true;
         PostQuitMessage(0);
         break;
@@ -91,12 +88,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     //create window
     MyRegisterClass(hInstance);
-    if (!InitInstance(hInstance, nCmdShow)) return 0;
+    if (!InitInstance(hInstance, nCmdShow)) return -1;
 
     //initialize the game
     if (!Game_Init(window)) {
-        MessageBox(window, "游戏初始化失败", Global::Window::GameTitle.c_str(), MB_OK);
-        return 0;
+        ShowMessage("游戏初始化失败");
+        return -1;
     }
 
     while (!Gameover)
@@ -122,9 +119,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     //free game resources
-    Game_End(window, device);
+    Game_Free(window, device);
 
     return msg.wParam;
 }
 
-
+//结束游戏
+void EndApplication()
+{
+    PostMessage(window, WM_DESTROY, 0, 0);
+}
+void ShowMessage(string text)
+{
+    MessageBox(window, text.c_str(), Global::Window::GameTitle.c_str(), MB_OK);
+}
