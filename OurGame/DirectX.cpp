@@ -23,7 +23,7 @@ char keys[256];
 //手柄输入
 XINPUT_GAMEPAD controllers[4];
 
-LPD3DXSPRITE spriteobj;
+LPD3DXSPRITE spriteObj;
 
 //初始化Direct3D
 bool Direct3D_Init(HWND window, int width, int height, bool fullscreen)
@@ -57,11 +57,14 @@ bool Direct3D_Init(HWND window, int width, int height, bool fullscreen)
     //get a pointer to the back buffer surface
     d3dDev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
 
+    //create sprite object
+    D3DXCreateSprite(d3dDev, &spriteObj);
     return 1;
 }
 //释放Direct3D
 void Direct3D_Shutdown()
 {
+    if (spriteObj) spriteObj->Release();
     if (d3dDev) d3dDev->Release();
     if (d3d) d3d->Release();
 }
@@ -95,7 +98,7 @@ LPDIRECT3DSURFACE9 LoadSurface(string filename)
     result = d3dDev->CreateOffscreenPlainSurface(
         info.Width,         //width of the surface
         info.Height,        //height of the surface
-        D3DFMT_X8R8G8B8,    //surface format
+        D3DFMT_A8R8G8B8,    //surface format
         D3DPOOL_DEFAULT,    //memory pool to use
         &image,             //pointer to the surface
         NULL);              //reserved (always NULL)
@@ -164,7 +167,7 @@ void Sprite_Draw_Frame(LPDIRECT3DTEXTURE9 texture, int destx, int desty, int fra
     rect.right = rect.left + framew;
     rect.bottom = rect.top + frameh;
 
-    spriteobj->Draw(texture, &rect, NULL, &position, white);
+    spriteObj->Draw(texture, &rect, NULL, &position, white);
 }
 
 void Sprite_Animate(int &frame, int startframe, int endframe, int direction, int &starttime, int delay)
@@ -196,7 +199,7 @@ void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, in
     D3DXMatrixTransformation2D(&mat, NULL, 0, &scale, &center, rotation, &trans);
 
     //tell sprite object to use the transform
-    spriteobj->SetTransform(&mat);
+    spriteObj->SetTransform(&mat);
 
     //calculate frame location in source image
     int fx = (frame % columns) * width;
@@ -204,12 +207,12 @@ void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, in
     RECT srcRect = { fx, fy, fx + width, fy + height };
 
     //draw the sprite frame
-    spriteobj->Draw(image, &srcRect, NULL, NULL, color);
+    spriteObj->Draw(image, &srcRect, NULL, NULL, color);
 
 
     //added in chapter 14
     D3DXMatrixIdentity(&mat);
-    spriteobj->SetTransform(&mat);
+    spriteObj->SetTransform(&mat);
 }
 
 void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, int height,
@@ -272,8 +275,6 @@ bool CollisionD(SPRITE sprite1, SPRITE sprite2)
     //return distance comparison
     return (dist < radius1 + radius2);
 }
-HWND window2;
-
 //初始化输入设备
 bool DirectInput_Init(HWND hwnd)
 {
@@ -294,16 +295,39 @@ bool DirectInput_Init(HWND hwnd)
     //initialize the mouse
     dInput->CreateDevice(GUID_SysMouse, &diMouse, NULL);
     diMouse->SetDataFormat(&c_dfDIMouse);
-    diMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+
+    //设置轴数据为绝对值，默认为相对值
+    //diMouse->SetProperty(DIPROP_AXISMODE, DIPROPAXISMODE_ABS);
+
+    //diMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+
+    //调整为独占鼠标模式，会夺取Windows对鼠标的控制，系统指针也不会显示了
+    diMouse->SetCooperativeLevel(hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+
+    mouseState.lX = mouseState.lY = mouseState.lZ = 0;
+    mousePoint.x = mousePoint.y = 0;
+
     diMouse->Acquire();
     d3dDev->ShowCursor(false);
-    window2 = hwnd;
+
     return true;
 }
+void ProcessInput()
+{
+    // 刷新鼠标位置，累加每一次偏移量
+    mousePoint.x += mouseState.lX;
+    mousePoint.y += mouseState.lY;
 
+    // 限制鼠标范围
+    if (mousePoint.x < 0) { mousePoint.x = 0; }
+    if (mousePoint.y < 0) { mousePoint.y = 0; }
+
+    if (mousePoint.x > Global::Window::ScreenWidth) { mousePoint.x = Global::Window::ScreenWidth; }
+    if (mousePoint.y > Global::Window::ScreenHeight) { mousePoint.y = Global::Window::ScreenHeight; }
+
+}
 void DirectInput_Update(HWND hWnd)
 {
-    static long lastX, lastY;
     //更新鼠标
     diMouse->Poll();
     if (!SUCCEEDED(diMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState)))
@@ -311,15 +335,8 @@ void DirectInput_Update(HWND hWnd)
         //mouse device lose, try to re-acquire
         diMouse->Acquire();
     }
-  
-    mousePoint.x += mouseState.lX;
-    mousePoint.x = mousePoint.x < 0 ? 0 : mousePoint.x;
-    mousePoint.y += mouseState.lY;
-    mousePoint.y = mousePoint.y < 0 ? 0 : mousePoint.y;
 
-    SetCursorPos(mousePoint.x, mousePoint.y);
-  
-   
+    ProcessInput();
 
     //更新键盘
     diKeyboard->Poll();
@@ -329,40 +346,35 @@ void DirectInput_Update(HWND hWnd)
         diKeyboard->Acquire();
     }
 
-    //更新手柄
-    for (int i = 0; i < 4; i++)
-    {
-        ZeroMemory(&controllers[i], sizeof(XINPUT_STATE));
-
-        //get the state of the controller
-        XINPUT_STATE state;
-        DWORD result = XInputGetState(i, &state);
-
-        //store state in global controllers array
-        if (result == 0) controllers[i] = state.Gamepad;
-    }
+    ////更新手柄
+    //for (int i = 0; i < 4; i++)
+    //{
+    //    ZeroMemory(&controllers[i], sizeof(XINPUT_STATE));
+    //    //get the state of the controller
+    //    XINPUT_STATE state;
+    //    DWORD result = XInputGetState(i, &state);
+    //    //store state in global controllers array
+    //    if (result == 0) controllers[i] = state.Gamepad;
+    //}
 }
+
 //取得鼠标X坐标
 int Mouse_X()
 {
-    RECT rect;
-    //GetClientRect(window2, &rect);
-    GetWindowRect(window2, &rect);
-    return mousePoint.x-rect.left;
+    return mousePoint.x;
 }
 //取得鼠标Y坐标
 int Mouse_Y()
 {
-    RECT rect;
-    //GetClientRect(window2, &rect);
-    GetWindowRect(window2, &rect);
-    return mousePoint.y-rect.top;
+    return mousePoint.y;
 }
+
 //取得鼠标按键状态
 int Mouse_Button(int button)
 {
     return mouseState.rgbButtons[button] & 0x80;
 }
+
 //取得键盘的按键状态
 bool Key_Down(int key)
 {
@@ -436,7 +448,7 @@ void FontPrint(LPD3DXFONT font, int x, int y, string text, D3DCOLOR color)
     font->DrawText(NULL, text.c_str(), text.length(), &rect, DT_CALCRECT, color);
 
     //print the text
-    font->DrawText(spriteobj, text.c_str(), text.length(), &rect, DT_LEFT, color);
+    font->DrawText(spriteObj, text.c_str(), text.length(), &rect, DT_LEFT, color);
 }
 
 

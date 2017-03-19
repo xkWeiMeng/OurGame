@@ -36,7 +36,7 @@ using namespace std;
 extern LPDIRECT3D9 d3d;
 extern LPDIRECT3DDEVICE9 d3dDev;
 extern LPDIRECT3DSURFACE9 backBuffer;
-extern LPD3DXSPRITE spriteobj;
+extern LPD3DXSPRITE spriteObj;
 
 //sprite structure
 struct SPRITE
@@ -95,11 +95,15 @@ extern LPDIRECTINPUT8 dInput;
 extern LPDIRECTINPUTDEVICE8 diMouse;
 //键盘设备
 extern LPDIRECTINPUTDEVICE8 diKeyboard;
-//鼠标状态
-extern DIMOUSESTATE mouseState;
+
+////鼠标状态
+//extern DIMOUSESTATE mouseState;
+
 //手柄状态
 extern XINPUT_GAMEPAD controllers[4];
 
+//鼠标坐标
+extern POINT mousePoint;
 
 bool DirectInput_Init(HWND);
 void DirectInput_Update(HWND);
@@ -133,7 +137,6 @@ CSound *LoadSound(string filename);
 void PlaySound(CSound *sound);
 void LoopSound(CSound *sound);
 void StopSound(CSound *sound);
-
 
 //define the MODEL struct
 struct MODEL

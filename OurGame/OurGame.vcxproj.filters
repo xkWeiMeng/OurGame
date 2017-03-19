@@ -43,6 +43,12 @@
     <Filter Include="源文件\Tools">
       <UniqueIdentifier>{2db69c12-86bd-42f1-aa82-ab830f91c03d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\GUI">
+      <UniqueIdentifier>{3b85fc39-24b9-4a3a-a259-bdc5f10f174f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\GUI">
+      <UniqueIdentifier>{90f92a65-02da-40a0-947a-96f5d12448b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -65,6 +71,9 @@
     </ClCompile>
     <ClCompile Include="DebugTools.cpp">
       <Filter>头文件\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="CursorGUI.cpp">
+      <Filter>源文件\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -98,5 +107,14 @@
     <ClInclude Include="DebugTools.h">
       <Filter>源文件\Tools</Filter>
     </ClInclude>
+    <ClInclude Include="CursorGUI.h">
+      <Filter>头文件\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUIs.h">
+      <Filter>头文件\GUI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

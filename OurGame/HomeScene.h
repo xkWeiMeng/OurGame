@@ -14,10 +14,10 @@ public:
     
 private:
     LPDIRECT3DSURFACE9 background = NULL;
+
     LPD3DXFONT font;
 private:
     void Draw_Background();
     bool Create_Background();
-
 };
 

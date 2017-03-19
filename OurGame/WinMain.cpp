@@ -22,11 +22,11 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         if (!Gameover)
             Game_Render(hWnd, device);
         break;
-    case WM_SIZE:
+    /*case WM_SIZE:
         LONG_PTR Style = ::GetWindowLongPtr(hWnd, GWL_STYLE);
         Style = Style &~WS_CAPTION &~WS_SYSMENU &~WS_SIZEBOX;
         ::SetWindowLongPtr(hWnd, GWL_STYLE, Style);
-        break;
+        break;*/
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }

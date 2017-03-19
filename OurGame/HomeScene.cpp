@@ -11,15 +11,15 @@ bool HomeScene::Create_Background()
     image = LoadSurface(Resource::Home::Backgroud);
     if (!image) return false;
 
-    //创建2D的表面background
-    HRESULT result = d3dDev->CreateOffscreenPlainSurface(
-        ScreenWidth,
-        ScreenHeight,
-        D3DFMT_X8R8G8B8,
-        D3DPOOL_DEFAULT,
-        &background,
-        NULL);
-    if (result != D3D_OK) return false;
+    ////创建2D的表面background
+    //HRESULT result = d3dDev->CreateOffscreenPlainSurface(
+    //    ScreenWidth,
+    //    ScreenHeight,
+    //    D3DFMT_X8R8G8B8,
+    //    D3DPOOL_DEFAULT,
+    //    &background,
+    //    NULL);
+    //if (result != D3D_OK) return false;
 
     //将表面绘制StretchRect到缓冲区中
     RECT source_rect = { 0, 0, ScreenWidth, ScreenHeight };
@@ -36,6 +36,7 @@ bool HomeScene::Create_Background()
     return true;
 
 }
+
 void HomeScene::Draw_Background()
 {
     RECT source_rect = {
@@ -63,20 +64,9 @@ void HomeScene::End()
 }
 void HomeScene::Update()
 {
-    static long lastX, lastY;
-    if (mouseState.lX != lastX || mouseState.lY != lastY)
-    {
-        lastX = mouseState.lX;
-        lastY = mouseState.lY;
-    }
-        if (Mouse_Button(1))
-        {
-            OutputDebugString("1按下");
-
-        }
 }
 void HomeScene::Render()
 {
-    HomeScene::Draw_Background();
-
+    //HomeScene::Draw_Background();
+    
 }

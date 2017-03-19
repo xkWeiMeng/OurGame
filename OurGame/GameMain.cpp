@@ -2,6 +2,7 @@
 #include"Global.h"
 #include"Scenes.h"
 #include"DebugTools.h"
+#include"GUIs.h"
 //当前游戏的场景
 Scene *scene = NULL;
 
@@ -23,7 +24,8 @@ bool Game_Init(HWND window)
         ShowMessage("Direct Input 初始化失败");
         return false;
     }
-
+    
+    GUI::Cursor::Init();
 
     //切换到欢迎场景
     Game_ChangeScene(GAME_STATE::Home);
@@ -38,7 +40,9 @@ void Game_Update(HWND window)
 {
     //获取最新的鼠标键盘输入
     DirectInput_Update(window);
-    
+
+    GUI::Cursor::Update();
+
     //执行当前场景的Update逻辑处理函数
     if (scene != NULL)
         scene->Update();
@@ -57,11 +61,13 @@ void Game_Render(HWND window, HDC device)
     if (!d3dDev) return;
 
     //清屏
-    d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 128, 0), 1.0f, 0);
+    d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 255, 179, 167), 1.0f, 0);
 
     //开始渲染
     if (d3dDev->BeginScene())
     {
+        spriteObj->Begin(D3DXSPRITE_ALPHABLEND);
+
         //调用当前场景的渲染函数
         if (scene != NULL)
             scene->Render();
@@ -69,9 +75,11 @@ void Game_Render(HWND window, HDC device)
         {
             DebugTools::PrintMouseInfo();
         }
-        //停止渲染
-        d3dDev->EndScene();
 
+        GUI::Cursor::Render();
+
+        spriteObj->End();
+        d3dDev->EndScene();
         //把后台缓存刷到前台显示
         d3dDev->Present(NULL, NULL, NULL, NULL);
     }
