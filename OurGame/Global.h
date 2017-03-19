@@ -20,7 +20,7 @@ namespace Global {
         const string GameTitle = "Our Game";
         const int ScreenWidth = 1024;
         const int ScreenHeight = 768;
-        const bool FULLSCREEN = false;
+        const bool FullScreen = true;
         //指定逻辑刷新速度
         const float targetFps = 60.0f;
     }
