@@ -20,11 +20,14 @@ namespace Global {
         const string GameTitle = "Our Game";
         const int ScreenWidth = 1024;
         const int ScreenHeight = 768;
-        const bool FullScreen = true;
+        //鼠标灵敏度
+        const float CursorSensitivity = 1.0f;
+        const bool FullScreen = false;
         //指定逻辑刷新速度
         const float targetFps = 60.0f;
     }
     namespace Debug {
+        //是否显示调试信息
         const bool ShowDebugInfo = true;
         //当前总帧率
         extern int currentFPS;

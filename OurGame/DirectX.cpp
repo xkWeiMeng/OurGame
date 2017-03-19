@@ -315,8 +315,8 @@ bool DirectInput_Init(HWND hwnd)
 void ProcessInput()
 {
     // 刷新鼠标位置，累加每一次偏移量
-    mousePoint.x += mouseState.lX;
-    mousePoint.y += mouseState.lY;
+    mousePoint.x += mouseState.lX*Global::Window::CursorSensitivity;
+    mousePoint.y += mouseState.lY*Global::Window::CursorSensitivity;
 
     // 限制鼠标范围
     if (mousePoint.x < 0) { mousePoint.x = 0; }
