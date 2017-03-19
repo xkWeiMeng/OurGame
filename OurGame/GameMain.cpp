@@ -9,8 +9,6 @@ Scene *scene = NULL;
 //当前游戏状态
 GAME_STATE Game_State;
 
-#define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
-
 // Startup and loading code goes here
 bool Game_Init(HWND window)
 {
@@ -24,7 +22,7 @@ bool Game_Init(HWND window)
         ShowMessage("Direct Input 初始化失败");
         return false;
     }
-    
+
     GUI::Cursor::Init();
 
     //切换到欢迎场景
@@ -48,7 +46,7 @@ void Game_Update(HWND window)
         scene->Update();
 
     //检测退出键按下后退出游戏
-    if (KEY_DOWN(VK_ESCAPE))
+    if (Key_Down(DIK_ESCAPE))
         PostMessage(window, WM_DESTROY, 0, 0);
 }
 
@@ -71,10 +69,12 @@ void Game_Render(HWND window, HDC device)
         //调用当前场景的渲染函数
         if (scene != NULL)
             scene->Render();
+
         if (Global::Debug::ShowDebugInfo)
         {
             DebugTools::PrintMouseInfo();
         }
+
 
         GUI::Cursor::Render();
 
@@ -99,17 +99,17 @@ void Game_ChangeScene(GAME_STATE to)
         {
         case GAME_STATE::Home:
             scene = new HomeScene();
-            //调用场景的初始化函数
-            if (!scene->Init())
-            {
-                //如果场景初始化出错则结束游戏
-                EndApplication();
-            }
-            break;
         case GAME_STATE::Playing:
             break;
         default:
+            scene = NULL;
             break;
+        }
+        //调用场景的初始化函数
+        if (scene == NULL && !scene->Init())
+        {
+            //如果场景初始化出错则结束游戏
+            EndApplication();
         }
         Game_State = to;
     }
