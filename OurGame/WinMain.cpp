@@ -12,6 +12,7 @@ bool Gameover = false;
 // Window callback function
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static RECT rect;
     switch (message)
     {
     case WM_DESTROY:
@@ -19,14 +20,25 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
     case WM_PAINT:
+        //获取窗口在屏幕的坐标
+        if (!Global::Window::FullScreen)
+        {
+            GetClientRect(hWnd, &rect);
+            Global::Window::x = rect.left;
+            Global::Window::y = rect.top;
+            
+        }
         if (!Gameover)
             Game_Render(hWnd, device);
         break;
-    /*case WM_SIZE:
-        LONG_PTR Style = ::GetWindowLongPtr(hWnd, GWL_STYLE);
-        Style = Style &~WS_CAPTION &~WS_SYSMENU &~WS_SIZEBOX;
-        ::SetWindowLongPtr(hWnd, GWL_STYLE, Style);
-        break;*/
+        /*case WM_SIZE://不绘制标题栏
+            LONG_PTR Style = ::GetWindowLongPtr(hWnd, GWL_STYLE);
+            Style = Style &~WS_CAPTION &~WS_SYSMENU &~WS_SIZEBOX;
+            ::SetWindowLongPtr(hWnd, GWL_STYLE, Style);
+            break;*/
+    case WM_ACTIVATE:
+        Global::Window::isActity = !(wParam == WA_INACTIVE);
+        break;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -112,6 +124,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             DispatchMessage(&msg);
         }
         else {
+            //如果窗口没有激活，并且也不允许后台运行游戏时，就跳过所有逻辑处理
+            if (Global::Window::isActity == false) {
+                if (Global::Window::EnableBackgroundRunning == false)
+                    continue;
+            }
+
             //获取当前时间，精确到毫秒
             currentTime = timeGetTime();
 
@@ -138,7 +156,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             Game_Render(window, device);//DirectX渲染
         }
     }
-
     //释放资源
     Game_Free(window, device);
 

@@ -20,6 +20,10 @@ namespace Global {
         const string GameTitle = "Our Game";
         const int ScreenWidth = 1024;
         const int ScreenHeight = 768;
+        //窗口的坐标
+        extern int x, y;
+        extern bool EnableBackgroundRunning;
+        extern bool isActity;
         //鼠标灵敏度
         const float CursorSensitivity = 1.0f;
         const bool FullScreen = false;

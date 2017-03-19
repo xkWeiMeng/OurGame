@@ -105,6 +105,10 @@ extern XINPUT_GAMEPAD controllers[4];
 //ЪѓБъзјБъ
 extern POINT mousePoint;
 
+#define MLButton 0
+#define MRButton 1
+#define MMButton 2
+
 bool DirectInput_Init(HWND);
 void DirectInput_Update(HWND);
 void DirectInput_Shutdown();

@@ -312,7 +312,8 @@ bool DirectInput_Init(HWND hwnd)
 
     return true;
 }
-void ProcessInput()
+bool isCursorInGame = true;
+void ProcessInput(HWND hwnd)
 {
     // 刷新鼠标位置，累加每一次偏移量
     mousePoint.x += mouseState.lX*Global::Window::CursorSensitivity;
@@ -321,24 +322,54 @@ void ProcessInput()
     // 限制鼠标范围
     if (mousePoint.x < 0) { mousePoint.x = 0; }
     if (mousePoint.y < 0) { mousePoint.y = 0; }
+    /*
+    if (mousePoint.y < 0) {
+    //标题栏检测
+        if (mousePoint.y < -32) {
+            mousePoint.x = 0;
+            mousePoint.y = 0;
+            isCursorInGame = false;
+            //放开鼠标控制
+            diMouse->Unacquire();
+            diMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+            diMouse->Acquire();
+        }
+    }
+    else {
+        if (isCursorInGame == false)
+        {
+            isCursorInGame = true;
+            //夺取鼠标控制
+            diMouse->Unacquire();
+            diMouse->SetCooperativeLevel(hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+            diMouse->Acquire();
+            mousePoint.y = 0;
+            mousePoint.x = 0;
+        }
+    }
+    */
 
     if (mousePoint.x > Global::Window::ScreenWidth) { mousePoint.x = Global::Window::ScreenWidth; }
     if (mousePoint.y > Global::Window::ScreenHeight) { mousePoint.y = Global::Window::ScreenHeight; }
 
-    //强制调整系统鼠标的位置，不然尽管看不到系统鼠标，但实际上还是存在的
-    SetCursorPos(mousePoint.x, mousePoint.y);
+    //如果游戏窗口是激活的则强制调整系统鼠标的位置，尽管看不到系统鼠标，实际上还是存在的
+    if (Global::Window::isActity && isCursorInGame)
+    {
+        SetCursorPos(mousePoint.x + Global::Window::x, mousePoint.y + Global::Window::y);
+    }
 }
 void DirectInput_Update(HWND hWnd)
 {
     //更新鼠标
     diMouse->Poll();
+
     if (!SUCCEEDED(diMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState)))
     {
         //mouse device lose, try to re-acquire
         diMouse->Acquire();
     }
-
-    ProcessInput();
+    ProcessInput(hWnd);
+    
 
     //更新键盘
     diKeyboard->Poll();
@@ -371,7 +402,12 @@ int Mouse_Y()
     return mousePoint.y;
 }
 
-//取得鼠标按键状态
+/*
+取得鼠标按键是否按下
+MLButton 左键
+MRButton 右键
+MMButton 中键
+*/
 int Mouse_Button(int button)
 {
     return mouseState.rgbButtons[button] & 0x80;

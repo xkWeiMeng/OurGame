@@ -38,6 +38,10 @@ void HomeScene::End()
 }
 void HomeScene::Update()
 {
+    if (Mouse_Button(MLButton))
+    {
+        OutputDebugString("×ó¼üµ¥»÷");
+    }
 }
 void HomeScene::Render()
 {
