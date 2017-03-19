@@ -37,7 +37,7 @@ bool Game_Init(HWND window)
 void Game_Update(HWND window)
 {
     //获取最新的鼠标键盘输入
-    DirectInput_Update();
+    DirectInput_Update(window);
     
     //执行当前场景的Update逻辑处理函数
     if (scene != NULL)

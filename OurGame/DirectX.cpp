@@ -272,6 +272,7 @@ bool CollisionD(SPRITE sprite1, SPRITE sprite2)
     //return distance comparison
     return (dist < radius1 + radius2);
 }
+HWND window2;
 
 //初始化输入设备
 bool DirectInput_Init(HWND hwnd)
@@ -296,12 +297,13 @@ bool DirectInput_Init(HWND hwnd)
     diMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
     diMouse->Acquire();
     d3dDev->ShowCursor(false);
-
+    window2 = hwnd;
     return true;
 }
 
-void DirectInput_Update()
+void DirectInput_Update(HWND hWnd)
 {
+    static long lastX, lastY;
     //更新鼠标
     diMouse->Poll();
     if (!SUCCEEDED(diMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState)))
@@ -309,10 +311,15 @@ void DirectInput_Update()
         //mouse device lose, try to re-acquire
         diMouse->Acquire();
     }
+  
     mousePoint.x += mouseState.lX;
+    mousePoint.x = mousePoint.x < 0 ? 0 : mousePoint.x;
     mousePoint.y += mouseState.lY;
+    mousePoint.y = mousePoint.y < 0 ? 0 : mousePoint.y;
+
     SetCursorPos(mousePoint.x, mousePoint.y);
   
+   
 
     //更新键盘
     diKeyboard->Poll();
@@ -335,16 +342,21 @@ void DirectInput_Update()
         if (result == 0) controllers[i] = state.Gamepad;
     }
 }
-
 //取得鼠标X坐标
 int Mouse_X()
 {
-    return mousePoint.x;
+    RECT rect;
+    //GetClientRect(window2, &rect);
+    GetWindowRect(window2, &rect);
+    return mousePoint.x-rect.left;
 }
 //取得鼠标Y坐标
 int Mouse_Y()
 {
-    return mousePoint.y;
+    RECT rect;
+    //GetClientRect(window2, &rect);
+    GetWindowRect(window2, &rect);
+    return mousePoint.y-rect.top;
 }
 //取得鼠标按键状态
 int Mouse_Button(int button)

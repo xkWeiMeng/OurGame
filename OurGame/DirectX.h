@@ -102,7 +102,7 @@ extern XINPUT_GAMEPAD controllers[4];
 
 
 bool DirectInput_Init(HWND);
-void DirectInput_Update();
+void DirectInput_Update(HWND);
 void DirectInput_Shutdown();
 bool Key_Down(int);
 int Mouse_Button(int);
