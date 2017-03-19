@@ -1,4 +1,6 @@
 #include"Global.h"
 namespace Global {
-    GAME_STATE Game_State = GAME_STATE::None;
+    namespace Debug {
+        int currentFPS = 0;
+    }
 }

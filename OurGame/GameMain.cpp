@@ -1,7 +1,7 @@
 #include"GameMain.h"
 #include"Global.h"
 #include"Scenes.h"
-
+#include"DebugTools.h"
 //当前游戏的场景
 Scene *scene = NULL;
 
@@ -18,6 +18,12 @@ bool Game_Init(HWND window)
         ShowMessage("Direct3D初始化失败");
         return false;
     }
+    if (!DirectInput_Init(window))
+    {
+        ShowMessage("Direct Input 初始化失败");
+        return false;
+    }
+
 
     //切换到欢迎场景
     Game_ChangeScene(GAME_STATE::Home);
@@ -30,6 +36,10 @@ bool Game_Init(HWND window)
 */
 void Game_Update(HWND window)
 {
+    //获取最新的鼠标键盘输入
+    DirectInput_Update();
+    
+    //执行当前场景的Update逻辑处理函数
     if (scene != NULL)
         scene->Update();
 
@@ -44,23 +54,26 @@ void Game_Update(HWND window)
 void Game_Render(HWND window, HDC device)
 {
     //确认DX已经生效
-    if (!d3ddev) return;
+    if (!d3dDev) return;
 
     //清屏
-    d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 128, 0), 1.0f, 0);
+    d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 128, 0), 1.0f, 0);
 
     //开始渲染
-    if (d3ddev->BeginScene())
+    if (d3dDev->BeginScene())
     {
         //调用当前场景的渲染函数
         if (scene != NULL)
             scene->Render();
-
+        if (Global::Debug::ShowDebugInfo)
+        {
+            DebugTools::PrintMouseInfo();
+        }
         //停止渲染
-        d3ddev->EndScene();
+        d3dDev->EndScene();
 
         //把后台缓存刷到前台显示
-        d3ddev->Present(NULL, NULL, NULL, NULL);
+        d3dDev->Present(NULL, NULL, NULL, NULL);
     }
 }
 //切换游戏场景
@@ -94,15 +107,16 @@ void Game_ChangeScene(GAME_STATE to)
     }
 }
 
-// 只允许在消息处理函数中调用此函数，要想关闭游戏，调用EndApplication()
+// 只允许在消息处理函数WinProc中调用此函数，要想关闭游戏，调用WinMain里的EndApplication
 void Game_Free(HWND window, HDC device)
 {
+    //调用场景的关闭函数并释放场景
     if (scene != NULL)
     {
         scene->End();
         delete scene;
     }
+    DirectInput_Shutdown();
     Direct3D_Shutdown();
-    //free the device
     ReleaseDC(window, device);
 }

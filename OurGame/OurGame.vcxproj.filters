@@ -25,12 +25,6 @@
     <Filter Include="源文件\Global">
       <UniqueIdentifier>{e5bdc221-b003-4f75-a52b-e524b9cfc356}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\Tools">
-      <UniqueIdentifier>{1845813e-65fd-4db2-b63c-3cc082e0a39c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\Tools">
-      <UniqueIdentifier>{8aba1728-fca5-4a17-a17e-d4c5218ad388}</UniqueIdentifier>
-    </Filter>
     <Filter Include="源文件\DirectX">
       <UniqueIdentifier>{fad90c4e-0833-4d38-ac97-9113c5106d59}</UniqueIdentifier>
     </Filter>
@@ -43,6 +37,12 @@
     <Filter Include="头文件\Scenes">
       <UniqueIdentifier>{6940d137-923e-4971-be50-fc7ab217a0dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Tools">
+      <UniqueIdentifier>{e38d36a4-b246-4880-a603-fb08c06a75f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Tools">
+      <UniqueIdentifier>{2db69c12-86bd-42f1-aa82-ab830f91c03d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -54,9 +54,6 @@
     <ClCompile Include="Global.cpp">
       <Filter>源文件\Global</Filter>
     </ClCompile>
-    <ClCompile Include="Graph.cpp">
-      <Filter>源文件\Tools</Filter>
-    </ClCompile>
     <ClCompile Include="DirectX.cpp">
       <Filter>源文件\DirectX</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
     <ClCompile Include="HomeScene.cpp">
       <Filter>源文件\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="DebugTools.cpp">
+      <Filter>头文件\Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameMain.h">
@@ -73,9 +73,6 @@
     </ClInclude>
     <ClInclude Include="Global.h">
       <Filter>头文件\Global</Filter>
-    </ClInclude>
-    <ClInclude Include="Graph.h">
-      <Filter>头文件\Tools</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
@@ -97,6 +94,9 @@
     </ClInclude>
     <ClInclude Include="WinMain.h">
       <Filter>头文件\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools.h">
+      <Filter>源文件\Tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

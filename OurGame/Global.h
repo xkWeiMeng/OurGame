@@ -21,6 +21,12 @@ namespace Global {
         const int ScreenWidth = 1024;
         const int ScreenHeight = 768;
         const bool FULLSCREEN = false;
-        const float constFps = 60.0f;
+        //指定逻辑刷新速度
+        const float targetFps = 60.0f;
+    }
+    namespace Debug {
+        const bool ShowDebugInfo = true;
+        //当前总帧率
+        extern int currentFPS;
     }
 }

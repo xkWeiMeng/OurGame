@@ -1,33 +1,40 @@
-// Beginning Game Programming
-// MyDirectX.cpp
-
 #include "DirectX.h"
 using namespace std;
 
-//Direct3D variables
+//Direct3D对象
 LPDIRECT3D9 d3d = NULL;
-LPDIRECT3DDEVICE9 d3ddev = NULL;
-LPDIRECT3DSURFACE9 backbuffer = NULL;
-LPD3DXSPRITE spriteobj = NULL;
+//D3D设备
+LPDIRECT3DDEVICE9 d3dDev = NULL;
 
-//DirectInput variables
-LPDIRECTINPUT8 dinput = NULL;
-LPDIRECTINPUTDEVICE8 dimouse = NULL;
-LPDIRECTINPUTDEVICE8 dikeyboard = NULL;
-DIMOUSESTATE mouse_state;
+//幕后缓冲区
+LPDIRECT3DSURFACE9 backBuffer = NULL;
+
+//DirectInput对象
+LPDIRECTINPUT8 dInput = NULL;
+//鼠标设备
+LPDIRECTINPUTDEVICE8 diMouse = NULL;
+//键盘设备
+LPDIRECTINPUTDEVICE8 diKeyboard = NULL;
+//鼠标状态
+DIMOUSESTATE mouseState;
 char keys[256];
+//手柄输入
 XINPUT_GAMEPAD controllers[4];
 
+LPD3DXSPRITE spriteobj;
 
+//初始化Direct3D
 bool Direct3D_Init(HWND window, int width, int height, bool fullscreen)
 {
-    //initialize Direct3D
+    //创建Direct3D对象
     d3d = Direct3DCreate9(D3D_SDK_VERSION);
     if (!d3d) return false;
 
-    //set Direct3D presentation parameters
+    //设置参数
     D3DPRESENT_PARAMETERS d3dpp;
+    //清零d3dpp所在的内存区
     ZeroMemory(&d3dpp, sizeof(d3dpp));
+
     d3dpp.hDeviceWindow = window;
     d3dpp.Windowed = (!fullscreen);
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -42,27 +49,21 @@ bool Direct3D_Init(HWND window, int width, int height, bool fullscreen)
 
     //create Direct3D device
     d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, window,
-        D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &d3ddev);
-    if (!d3ddev) return false;
-
+        D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &d3dDev);
+    if (!d3dDev) return false;
 
     //get a pointer to the back buffer surface
-    d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backbuffer);
-
-    //create sprite object
-    //D3DXCreateSprite(d3ddev, &spriteobj);
+    d3dDev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
 
     return 1;
 }
-
+//释放Direct3D
 void Direct3D_Shutdown()
 {
-    //if (spriteobj) spriteobj->Release();
-
-    if (d3ddev) d3ddev->Release();
+    if (d3dDev) d3dDev->Release();
     if (d3d) d3d->Release();
 }
-
+//画表面
 void DrawSurface(LPDIRECT3DSURFACE9 dest, float x, float y, LPDIRECT3DSURFACE9 source)
 {
     //get width/height from source surface
@@ -74,10 +75,10 @@ void DrawSurface(LPDIRECT3DSURFACE9 dest, float x, float y, LPDIRECT3DSURFACE9 s
     RECT dest_rect = { (long)x, (long)y, (long)x + desc.Width, (long)y + desc.Height };
 
     //draw the source surface onto the dest
-    d3ddev->StretchRect(source, &source_rect, dest, &dest_rect, D3DTEXF_NONE);
+    d3dDev->StretchRect(source, &source_rect, dest, &dest_rect, D3DTEXF_NONE);
 
 }
-
+//载入表面
 LPDIRECT3DSURFACE9 LoadSurface(string filename)
 {
     LPDIRECT3DSURFACE9 image = NULL;
@@ -89,7 +90,7 @@ LPDIRECT3DSURFACE9 LoadSurface(string filename)
         return NULL;
 
     //create surface
-    result = d3ddev->CreateOffscreenPlainSurface(
+    result = d3dDev->CreateOffscreenPlainSurface(
         info.Width,         //width of the surface
         info.Height,        //height of the surface
         D3DFMT_X8R8G8B8,    //surface format
@@ -116,7 +117,7 @@ LPDIRECT3DSURFACE9 LoadSurface(string filename)
     return image;
 }
 
-
+//载入纹理
 LPDIRECT3DTEXTURE9 LoadTexture(std::string filename, D3DCOLOR transcolor)
 {
     LPDIRECT3DTEXTURE9 texture = NULL;
@@ -128,7 +129,7 @@ LPDIRECT3DTEXTURE9 LoadTexture(std::string filename, D3DCOLOR transcolor)
 
     //create the new texture by loading a bitmap image file
     D3DXCreateTextureFromFileEx(
-        d3ddev,                //Direct3D device object
+        d3dDev,                //Direct3D device object
         filename.c_str(),      //bitmap filename
         info.Width,            //bitmap image width
         info.Height,           //bitmap image height
@@ -215,7 +216,7 @@ void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, in
     Sprite_Transform_Draw(image, x, y, width, height, frame, columns, rotation, scaling, scaling, color);
 }
 
-//bounding  box collision detection
+//判定两个精灵是否碰撞
 int Collision(SPRITE sprite1, SPRITE sprite2)
 {
     RECT rect1;
@@ -234,7 +235,7 @@ int Collision(SPRITE sprite1, SPRITE sprite2)
     return IntersectRect(&dest, &rect1, &rect2);
 }
 
-
+//判定两个精灵是否碰撞
 bool CollisionD(SPRITE sprite1, SPRITE sprite2)
 {
     double radius1, radius2;
@@ -270,6 +271,7 @@ bool CollisionD(SPRITE sprite1, SPRITE sprite2)
     return (dist < radius1 + radius2);
 }
 
+//初始化输入设备
 bool DirectInput_Init(HWND hwnd)
 {
     //initialize DirectInput object
@@ -277,44 +279,44 @@ bool DirectInput_Init(HWND hwnd)
         GetModuleHandle(NULL),
         DIRECTINPUT_VERSION,
         IID_IDirectInput8,
-        (void**)&dinput,
+        (void**)&dInput,
         NULL);
 
     //initialize the keyboard
-    dinput->CreateDevice(GUID_SysKeyboard, &dikeyboard, NULL);
-    dikeyboard->SetDataFormat(&c_dfDIKeyboard);
-    dikeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-    dikeyboard->Acquire();
+    dInput->CreateDevice(GUID_SysKeyboard, &diKeyboard, NULL);
+    diKeyboard->SetDataFormat(&c_dfDIKeyboard);
+    diKeyboard->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+    diKeyboard->Acquire();
 
     //initialize the mouse
-    dinput->CreateDevice(GUID_SysMouse, &dimouse, NULL);
-    dimouse->SetDataFormat(&c_dfDIMouse);
-    dimouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-    dimouse->Acquire();
-    d3ddev->ShowCursor(false);
+    dInput->CreateDevice(GUID_SysMouse, &diMouse, NULL);
+    diMouse->SetDataFormat(&c_dfDIMouse);
+    diMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+    diMouse->Acquire();
+    d3dDev->ShowCursor(false);
 
     return true;
 }
 
 void DirectInput_Update()
 {
-    //update mouse
-    dimouse->Poll();
-    if (!SUCCEEDED(dimouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouse_state)))
+    //更新鼠标
+    diMouse->Poll();
+    if (!SUCCEEDED(diMouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState)))
     {
         //mouse device lose, try to re-acquire
-        dimouse->Acquire();
+        diMouse->Acquire();
     }
 
-    //update keyboard
-    dikeyboard->Poll();
-    if (!SUCCEEDED(dikeyboard->GetDeviceState(256, (LPVOID)&keys)))
+    //更新键盘
+    diKeyboard->Poll();
+    if (!SUCCEEDED(diKeyboard->GetDeviceState(256, (LPVOID)&keys)))
     {
         //keyboard device lost, try to re-acquire
-        dikeyboard->Acquire();
+        diKeyboard->Acquire();
     }
 
-    //update controllers
+    //更新手柄
     for (int i = 0; i < 4; i++)
     {
         ZeroMemory(&controllers[i], sizeof(XINPUT_STATE));
@@ -328,22 +330,26 @@ void DirectInput_Update()
     }
 }
 
-
+//取得鼠标X坐标
 int Mouse_X()
 {
-    return mouse_state.lX;
+    static long lastX = 0;
+    lastX += mouseState.lX;
+    return lastX;
 }
-
+//取得鼠标Y坐标
 int Mouse_Y()
 {
-    return mouse_state.lY;
+    static long lastY = 0;
+    lastY += mouseState.lY;
+    return lastY;
 }
-
+//取得鼠标按键状态
 int Mouse_Button(int button)
 {
-    return mouse_state.rgbButtons[button] & 0x80;
+    return mouseState.rgbButtons[button] & 0x80;
 }
-
+//取得键盘的按键状态
 bool Key_Down(int key)
 {
     return (bool)(keys[key] & 0x80);
@@ -352,17 +358,17 @@ bool Key_Down(int key)
 
 void DirectInput_Shutdown()
 {
-    if (dikeyboard)
+    if (diKeyboard)
     {
-        dikeyboard->Unacquire();
-        dikeyboard->Release();
-        dikeyboard = NULL;
+        diKeyboard->Unacquire();
+        diKeyboard->Release();
+        diKeyboard = NULL;
     }
-    if (dimouse)
+    if (diMouse)
     {
-        dimouse->Unacquire();
-        dimouse->Release();
-        dimouse = NULL;
+        diMouse->Unacquire();
+        diMouse->Release();
+        diMouse = NULL;
     }
 }
 
@@ -404,7 +410,7 @@ LPD3DXFONT MakeFont(string name, int size)
 
     strcpy_s(desc.FaceName, name.c_str());
 
-    D3DXCreateFontIndirect(d3ddev, &desc, &font);
+    D3DXCreateFontIndirect(d3dDev, &desc, &font);
 
     return font;
 }
@@ -504,12 +510,12 @@ void SetCamera(float posx, float posy, float posz, float lookx, float looky, flo
     //set the perspective 
     D3DXMATRIX matProj;
     D3DXMatrixPerspectiveFovLH(&matProj, fov, aspectRatio, nearRange, farRange);
-    d3ddev->SetTransform(D3DTS_PROJECTION, &matProj);
+    d3dDev->SetTransform(D3DTS_PROJECTION, &matProj);
 
     //set up the camera view matrix
     D3DXMATRIX matView;
     D3DXMatrixLookAtLH(&matView, &position, &target, &updir);
-    d3ddev->SetTransform(D3DTS_VIEW, &matView);
+    d3dDev->SetTransform(D3DTS_VIEW, &matView);
 }
 
 
@@ -576,7 +582,7 @@ MODEL *LoadModel(string filename)
     result = D3DXLoadMeshFromX(
         filename.c_str(),               //filename
         D3DXMESH_SYSTEMMEM,     //mesh options
-        d3ddev,                 //Direct3D device
+        d3dDev,                 //Direct3D device
         NULL,                   //adjacency buffer
         &matbuffer,             //material buffer
         NULL,                   //special effects
@@ -609,7 +615,7 @@ MODEL *LoadModel(string filename)
             string filename = d3dxMaterials[i].pTextureFilename;
             if (FindFile(&filename))
             {
-                result = D3DXCreateTextureFromFile(d3ddev, filename.c_str(), &model->textures[i]);
+                result = D3DXCreateTextureFromFile(d3dDev, filename.c_str(), &model->textures[i]);
                 if (result != D3D_OK)
                 {
                     MessageBox(NULL, "Could not find texture file", "Error", MB_OK);
@@ -665,7 +671,7 @@ void DrawModel(MODEL *model)
         for (DWORD i = 0; i < model->material_count; i++)
         {
             // Set the material and texture for this subset
-            d3ddev->SetMaterial(&model->materials[i]);
+            d3dDev->SetMaterial(&model->materials[i]);
 
             if (model->textures[i])
             {
@@ -675,7 +681,7 @@ void DrawModel(MODEL *model)
                     model->textures[i]->GetLevelDesc(0, &desc);
                     if (desc.Width > 0)
                     {
-                        d3ddev->SetTexture(0, model->textures[i]);
+                        d3dDev->SetTexture(0, model->textures[i]);
                     }
                 }
             }

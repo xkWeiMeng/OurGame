@@ -11,41 +11,27 @@ bool HomeScene::Create_Background()
     image = LoadSurface(Resource::Home::Backgroud);
     if (!image) return false;
 
-    HRESULT result =
-        d3ddev->CreateOffscreenPlainSurface(
-            ScreenWidth,
-            ScreenHeight,
-            D3DFMT_X8R8G8B8,
-            D3DPOOL_DEFAULT,
-            &background,
-            NULL);
+    //创建2D的表面background
+    HRESULT result = d3dDev->CreateOffscreenPlainSurface(
+        ScreenWidth,
+        ScreenHeight,
+        D3DFMT_X8R8G8B8,
+        D3DPOOL_DEFAULT,
+        &background,
+        NULL);
     if (result != D3D_OK) return false;
 
-    //copy image to upper left corner of background
+    //将表面绘制StretchRect到缓冲区中
     RECT source_rect = { 0, 0, ScreenWidth, ScreenHeight };
-    RECT dest_ul = { 0, 0, ScreenWidth, ScreenHeight };
 
-    d3ddev->StretchRect(
+    d3dDev->StretchRect(
         image,
         &source_rect,
         background,
-        &dest_ul,
-        D3DTEXF_NONE);
-
-    //copy image to upper right corner of background
-    RECT dest_ur = { ScreenWidth, 0, ScreenWidth * 2, ScreenHeight };
-
-    d3ddev->StretchRect(
-        image,
         &source_rect,
-        background,
-        &dest_ur,
         D3DTEXF_NONE);
 
-    //get pointer to the back buffer
-    d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO,&backbuffer);
-
-    //remove image
+    //释放图像表面
     image->Release();
     return true;
 
@@ -58,18 +44,17 @@ void HomeScene::Draw_Background()
         ScreenWidth,
         ScreenHeight
     };
-    RECT dest_rect = { 0, 0, ScreenWidth, ScreenHeight };
-    d3ddev->StretchRect(background, &source_rect, backbuffer,
-        &dest_rect, D3DTEXF_NONE);
+    d3dDev->StretchRect(background, &source_rect, backBuffer, &source_rect, D3DTEXF_NONE);
 }
 
 bool HomeScene::Init()
 {
-    OutputDebugString("欢迎场景开始初始化");
+    OutputDebugString("欢迎场景开始初始化\n");
     if (!HomeScene::Create_Background())
     {
         ShowMessage("背景图载入失败");
     }
+
     return true;
 }
 void HomeScene::End()
@@ -78,9 +63,20 @@ void HomeScene::End()
 }
 void HomeScene::Update()
 {
+    static long lastX, lastY;
+    if (mouseState.lX != lastX || mouseState.lY != lastY)
+    {
+        lastX = mouseState.lX;
+        lastY = mouseState.lY;
+    }
+        if (Mouse_Button(1))
+        {
+            OutputDebugString("1按下");
 
+        }
 }
 void HomeScene::Render()
 {
     HomeScene::Draw_Background();
+
 }
