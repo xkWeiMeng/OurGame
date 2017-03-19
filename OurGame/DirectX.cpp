@@ -98,7 +98,7 @@ LPDIRECT3DSURFACE9 LoadSurface(string filename)
     result = d3dDev->CreateOffscreenPlainSurface(
         info.Width,         //width of the surface
         info.Height,        //height of the surface
-        D3DFMT_A8R8G8B8,    //surface format
+        D3DFMT_X8R8G8B8,    //surface format
         D3DPOOL_DEFAULT,    //memory pool to use
         &image,             //pointer to the surface
         NULL);              //reserved (always NULL)
@@ -113,7 +113,7 @@ LPDIRECT3DSURFACE9 LoadSurface(string filename)
         filename.c_str(),       //source filename
         NULL,                   //source rectangle
         D3DX_DEFAULT,           //controls how image is filtered
-        D3DCOLOR_XRGB(0, 0, 0),   //for transparency (0 for none)
+        D3DCOLOR_XRGB(255, 255, 255),   //for transparency (0 for none)
         NULL);                  //source image info (usually NULL)
 
     //make sure file was loaded okay
@@ -325,6 +325,8 @@ void ProcessInput()
     if (mousePoint.x > Global::Window::ScreenWidth) { mousePoint.x = Global::Window::ScreenWidth; }
     if (mousePoint.y > Global::Window::ScreenHeight) { mousePoint.y = Global::Window::ScreenHeight; }
 
+    //强制调整系统鼠标的位置，不然尽管看不到系统鼠标，但实际上还是存在的
+    SetCursorPos(mousePoint.x, mousePoint.y);
 }
 void DirectInput_Update(HWND hWnd)
 {

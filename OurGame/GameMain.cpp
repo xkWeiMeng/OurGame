@@ -106,7 +106,7 @@ void Game_ChangeScene(GAME_STATE to)
             break;
         }
         //调用场景的初始化函数
-        if (scene == NULL && !scene->Init())
+        if (scene == NULL || !scene->Init())
         {
             //如果场景初始化出错则结束游戏
             EndApplication();
