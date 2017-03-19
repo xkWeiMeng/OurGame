@@ -17,6 +17,8 @@ LPDIRECTINPUTDEVICE8 diMouse = NULL;
 LPDIRECTINPUTDEVICE8 diKeyboard = NULL;
 //鼠标状态
 DIMOUSESTATE mouseState;
+
+POINT mousePoint;
 char keys[256];
 //手柄输入
 XINPUT_GAMEPAD controllers[4];
@@ -307,6 +309,10 @@ void DirectInput_Update()
         //mouse device lose, try to re-acquire
         diMouse->Acquire();
     }
+    mousePoint.x += mouseState.lX;
+    mousePoint.y += mouseState.lY;
+    SetCursorPos(mousePoint.x, mousePoint.y);
+  
 
     //更新键盘
     diKeyboard->Poll();
@@ -333,16 +339,12 @@ void DirectInput_Update()
 //取得鼠标X坐标
 int Mouse_X()
 {
-    static long lastX = 0;
-    lastX += mouseState.lX;
-    return lastX;
+    return mousePoint.x;
 }
 //取得鼠标Y坐标
 int Mouse_Y()
 {
-    static long lastY = 0;
-    lastY += mouseState.lY;
-    return lastY;
+    return mousePoint.y;
 }
 //取得鼠标按键状态
 int Mouse_Button(int button)
