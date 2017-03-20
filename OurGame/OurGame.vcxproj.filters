@@ -69,11 +69,11 @@
     <ClCompile Include="HomeScene.cpp">
       <Filter>源文件\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="DebugTools.cpp">
-      <Filter>头文件\Tools</Filter>
-    </ClCompile>
     <ClCompile Include="CursorGUI.cpp">
       <Filter>源文件\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugTools.cpp">
+      <Filter>源文件\Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,14 +104,14 @@
     <ClInclude Include="WinMain.h">
       <Filter>头文件\Main</Filter>
     </ClInclude>
-    <ClInclude Include="DebugTools.h">
-      <Filter>源文件\Tools</Filter>
-    </ClInclude>
     <ClInclude Include="CursorGUI.h">
       <Filter>头文件\GUI</Filter>
     </ClInclude>
     <ClInclude Include="GUIs.h">
       <Filter>头文件\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugTools.h">
+      <Filter>头文件\Tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

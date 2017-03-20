@@ -9,8 +9,10 @@ namespace DebugTools {
     void PrintMouseInfo() {
         static LPD3DXFONT font = MakeFont("ÀŒÃÂ", 18);
         string text;
-        text += "FPS£∫";
+        text += "Total FPS£∫";
         text += int2str(Global::Debug::currentFPS);
+        text += " Logical FPS£∫";
+        text += int2str(Global::Window::targetFps);
         text += "\n";
         text += " Û±Í X£∫";
         text += int2str(Mouse_X());

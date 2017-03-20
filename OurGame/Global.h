@@ -28,7 +28,7 @@ namespace Global {
         const float CursorSensitivity = 1.0f;
         const bool FullScreen = false;
         //指定逻辑刷新速度
-        const float targetFps = 60.0f;
+        const float targetFps = 120.0f;
     }
     namespace Debug {
         //是否显示调试信息
