@@ -5,6 +5,9 @@ namespace Global {
         bool EnableBackgroundRunning = true;
         bool isActity = true;
     }
+    namespace Home {
+        int selectedType;
+    }
     namespace Debug {
         int currentFPS = 0;
     }

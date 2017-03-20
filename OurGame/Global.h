@@ -30,6 +30,10 @@ namespace Global {
         //指定逻辑刷新速度
         const float targetFps = 120.0f;
     }
+    namespace Home {
+        //最终的选项，0：单人游戏；1：多人游戏；2：关于我们
+        extern int selectedType;
+    }
     namespace Debug {
         //是否显示调试信息
         const bool ShowDebugInfo = true;

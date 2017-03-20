@@ -20,6 +20,8 @@ DIMOUSESTATE mouseState;
 
 POINT mousePoint;
 char keys[256];
+char keys_down[256];
+
 //手柄输入
 XINPUT_GAMEPAD controllers[4];
 
@@ -413,12 +415,30 @@ int Mouse_Button(int button)
     return mouseState.rgbButtons[button] & 0x80;
 }
 
-//取得键盘的按键状态
+//判断按键是否按下
 bool Key_Down(int key)
 {
     return (bool)(keys[key] & 0x80);
 }
 
+bool Key_Up(int key)
+{
+    //判断上一帧是否已经按下
+    if ((bool)(keys_down[key] & 0x80))
+    {
+        //判断按键是否不处于按下状态
+        if (!Key_Down(key))
+        {
+            keys_down[key] = 0;
+            return true;
+        }
+    }
+    else if (Key_Down(key))
+    {
+        keys_down[key] = keys[key];
+    }
+    return false;
+}
 
 void DirectInput_Shutdown()
 {

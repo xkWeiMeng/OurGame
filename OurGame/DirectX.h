@@ -109,6 +109,8 @@ extern POINT mousePoint;
 #define MRButton 1
 #define MMButton 2
 
+bool Key_Up(int);
+
 bool DirectInput_Init(HWND);
 void DirectInput_Update(HWND);
 void DirectInput_Shutdown();
