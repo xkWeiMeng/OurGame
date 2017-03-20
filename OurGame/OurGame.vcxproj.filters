@@ -114,7 +114,4 @@
       <Filter>头文件\GUI</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
 </Project>
