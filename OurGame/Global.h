@@ -23,4 +23,5 @@ namespace Global {
         const bool FULLSCREEN = false;
         const float constFps = 60.0f;
     }
+
 }

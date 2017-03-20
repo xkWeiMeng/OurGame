@@ -6,4 +6,5 @@ namespace Resource {
     namespace Home {
         char* const Backgroud = "Resources\\Home\\Background.jpg";
     }
+
 }

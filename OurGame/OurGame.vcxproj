@@ -41,13 +41,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -152,6 +152,7 @@
   <ItemGroup>
     <ClCompile Include="DirectSound.cpp" />
     <ClCompile Include="GameMain.cpp" />
+    <ClCompile Include="GamingScene.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="DirectX.cpp" />
@@ -161,6 +162,7 @@
   <ItemGroup>
     <ClInclude Include="DirectSound.h" />
     <ClInclude Include="GameMain.h" />
+    <ClInclude Include="GamingScene.h" />
     <ClInclude Include="Global.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="DirectX.h" />

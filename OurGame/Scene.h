@@ -1,6 +1,7 @@
 #pragma once
 #include"DirectX.h"
 #include"DirectSound.h"
+
 //所有场景的基类，用于统一接口调用
 class Scene
 {

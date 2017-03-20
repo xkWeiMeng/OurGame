@@ -66,6 +66,9 @@
     <ClCompile Include="HomeScene.cpp">
       <Filter>源文件\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="GamingScene.cpp">
+      <Filter>源文件\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameMain.h">
@@ -97,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="WinMain.h">
       <Filter>头文件\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="GamingScene.h">
+      <Filter>头文件\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
