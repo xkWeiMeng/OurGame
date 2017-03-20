@@ -5,6 +5,8 @@ using namespace std;
 namespace Resource {
     namespace Home {
         char* const Backgroud = "Resources\\Home\\Background.jpg";
+        //char* const BGM = "Resources\\Home\\3.wav";
+          
 
     }
     namespace Cursor {

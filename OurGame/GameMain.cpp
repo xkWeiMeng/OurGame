@@ -3,6 +3,7 @@
 #include"Scenes.h"
 #include"DebugTools.h"
 #include"GUIs.h"
+#include"DirectSound.h"
 //当前游戏的场景
 Scene *scene = NULL;
 
@@ -22,7 +23,10 @@ bool Game_Init(HWND window)
         ShowMessage("Direct Input 初始化失败");
         return false;
     }
-
+    if (!DirectSound_Init(window)) {
+        ShowMessage("Direct Sound 初始化失败");
+        return false;
+    }
     GUI::Cursor::Init();
 
     //切换到欢迎场景
@@ -125,6 +129,7 @@ void Game_Free(HWND window, HDC device)
         delete scene;
     }
     DirectInput_Shutdown();
+    DirectSound_Shutdown();
     Direct3D_Shutdown();
     ReleaseDC(window, device);
 }

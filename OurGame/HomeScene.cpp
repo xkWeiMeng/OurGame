@@ -27,7 +27,15 @@ bool HomeScene::Init()
     if (!HomeScene::Create_Background())
     {
         ShowMessage("背景图载入失败");
+        return false;
     }
+    //DXSound组件是软解码，库里暂时只支持wav
+    //if (bgm = LoadSound(Resource::Home::BGM), bgm == NULL) {
+        //ShowMessage("BGM载入失败");
+        //return false;
+    //}
+    //LoopSound(bgm);
+
 
     return true;
 }
@@ -35,6 +43,7 @@ void HomeScene::End()
 {
     //释放背景图
     background->Release();
+    //delete bgm;
 }
 void HomeScene::Update()
 {

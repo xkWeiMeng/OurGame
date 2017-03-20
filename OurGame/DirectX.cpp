@@ -352,7 +352,7 @@ void ProcessInput(HWND hwnd)
     if (mousePoint.x > Global::Window::ScreenWidth) { mousePoint.x = Global::Window::ScreenWidth; }
     if (mousePoint.y > Global::Window::ScreenHeight) { mousePoint.y = Global::Window::ScreenHeight; }
 
-    //如果游戏窗口是激活的则强制调整系统鼠标的位置，尽管看不到系统鼠标，实际上还是存在的
+    //如果游戏窗口是激活的则强制调整系统鼠标的位置，尽管看不到系统鼠标，实际上还是存在的，但鼠标的按键操作不会对游戏以外的程序有影响
     if (Global::Window::isActity && isCursorInGame)
     {
         SetCursorPos(mousePoint.x + Global::Window::x, mousePoint.y + Global::Window::y);
