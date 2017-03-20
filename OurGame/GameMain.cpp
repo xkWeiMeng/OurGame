@@ -105,6 +105,9 @@ void Game_ChangeScene(GAME_STATE to)
             scene = new HomeScene();
         case GAME_STATE::Playing:
             break;
+        case GAME_STATE::About:
+            scene = new AboutScene();
+            break;
         default:
             scene = NULL;
             break;

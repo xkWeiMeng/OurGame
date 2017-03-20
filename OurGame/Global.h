@@ -13,7 +13,9 @@ enum GAME_STATE
     //欢迎场景
     Home = 1,
     //游戏场景
-    Playing = 2
+    Playing = 2,
+    //关于场景
+    About = 3
 };
 namespace Global {
     namespace Window {

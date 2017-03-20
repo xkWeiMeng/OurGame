@@ -50,10 +50,10 @@ void HomeScene::End()
 }
 void HomeScene::Update()
 {
-    if (Mouse_Button(MLButton))
-    {
-        OutputDebugString("×ó¼üµ¥»÷");
-    }
+    //if (Mouse_Button(MLButton))
+    //{
+    //    OutputDebugString("×ó¼üµ¥»÷");
+    //}
     if (Key_Up(DIK_DOWN))
     {
         HomeScene::choose++;
@@ -67,7 +67,19 @@ void HomeScene::Update()
     if (Key_Up(DIK_SPACE))
     {
         Global::Home::selectedType = choose;
-        //Game_ChangeScene();
+        switch (choose)
+        {
+        case 0:
+            //Game_ChangeScene();
+            break;
+        case 1:
+            break;
+        case 2:
+            Game_ChangeScene(GAME_STATE::About);
+            break;
+        default:
+            break;
+        }
     }
 }
 void HomeScene::Render()

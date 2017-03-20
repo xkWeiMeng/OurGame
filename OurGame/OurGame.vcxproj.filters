@@ -75,6 +75,9 @@
     <ClCompile Include="DebugTools.cpp">
       <Filter>源文件\Tools</Filter>
     </ClCompile>
+    <ClCompile Include="AboutScene.cpp">
+      <Filter>源文件\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameMain.h">
@@ -112,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="DebugTools.h">
       <Filter>头文件\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutScene.h">
+      <Filter>头文件\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

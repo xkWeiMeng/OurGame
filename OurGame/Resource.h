@@ -15,4 +15,8 @@ namespace Resource {
     namespace Cursor {
         char* const Normal = "Resources\\Cursor\\Normal.png";
     }
+    namespace About {
+        char* const Backgroud = "Resources\\About\\Background.jpg";
+
+    }
 }

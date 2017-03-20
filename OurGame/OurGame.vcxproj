@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AboutScene.cpp" />
     <ClCompile Include="CursorGUI.cpp" />
     <ClCompile Include="DebugTools.cpp" />
     <ClCompile Include="DirectSound.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AboutScene.h" />
     <ClInclude Include="CursorGUI.h" />
     <ClInclude Include="DebugTools.h" />
     <ClInclude Include="DirectSound.h" />
