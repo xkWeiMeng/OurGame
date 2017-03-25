@@ -1,55 +1,16 @@
 #include "HomeScene.h"
 #include "Global.h"
 #include "DirectX.h"
+#include"GameMain.h"
 using namespace Global;
 using namespace Global::Window;
 
 bool HomeScene::Create_Background()
 {
-    //load background
-    LPDIRECT3DSURFACE9 image = NULL;
-    image = LoadSurface(Resource::Home::Backgroud);
-    if (!image) return false;
-
-    HRESULT result =
-        d3ddev->CreateOffscreenPlainSurface(
-            ScreenWidth,
-            ScreenHeight,
-            D3DFMT_X8R8G8B8,
-            D3DPOOL_DEFAULT,
-            &background,
-            NULL);
-    if (result != D3D_OK) return false;
-
-    //copy image to upper left corner of background
-    RECT source_rect = { 0, 0, ScreenWidth, ScreenHeight };
-    RECT dest_ul = { 0, 0, ScreenWidth, ScreenHeight };
-
-    d3ddev->StretchRect(
-        image,
-        &source_rect,
-        background,
-        &dest_ul,
-        D3DTEXF_NONE);
-
-    //copy image to upper right corner of background
-    RECT dest_ur = { ScreenWidth, 0, ScreenWidth * 2, ScreenHeight };
-
-    d3ddev->StretchRect(
-        image,
-        &source_rect,
-        background,
-        &dest_ur,
-        D3DTEXF_NONE);
-
-    //get pointer to the back buffer
-    d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO,&backbuffer);
-
-    //remove image
-    image->Release();
-    return true;
-
+    background = LoadSurface(Resource::Home::Backgroud);
+    return background != NULL;
 }
+
 void HomeScene::Draw_Background()
 {
     RECT source_rect = {
@@ -58,29 +19,73 @@ void HomeScene::Draw_Background()
         ScreenWidth,
         ScreenHeight
     };
-    RECT dest_rect = { 0, 0, ScreenWidth, ScreenHeight };
-    d3ddev->StretchRect(background, &source_rect, backbuffer,
-        &dest_rect, D3DTEXF_NONE);
+    d3dDev->StretchRect(background, NULL, backBuffer, &source_rect, D3DTEXF_NONE);
 }
 
 bool HomeScene::Init()
 {
-    OutputDebugString("欢迎场景开始初始化");
+    OutputDebugString("欢迎场景开始初始化\n");
     if (!HomeScene::Create_Background())
     {
         ShowMessage("背景图载入失败");
+        return false;
     }
+    HomeScene::choose = 0;
+    HomeScene::font = MakeFont("微软雅黑", 32);
+    //DXSound组件是软解码，库里暂时只支持wav
+    //if (bgm = LoadSound(Resource::Home::BGM), bgm == NULL) {
+        //ShowMessage("BGM载入失败");
+        //return false;
+    //}
+    //LoopSound(bgm);
+
+
     return true;
 }
 void HomeScene::End()
 {
-
+    //释放背景图
+    background->Release();
+    //delete bgm;
 }
 void HomeScene::Update()
 {
-
+    //if (Mouse_Button(MLButton))
+    //{
+    //    OutputDebugString("左键单击");
+    //}
+    if (Key_Up(DIK_DOWN))
+    {
+        HomeScene::choose++;
+        HomeScene::choose %= 3;
+    }
+    if (Key_Up(DIK_UP))
+    {
+        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 0;
+        HomeScene::choose %= 3;
+    }
+    if (Key_Up(DIK_SPACE))
+    {
+        Global::Home::selectedType = choose;
+        switch (choose)
+        {
+        case 0:
+            //Game_ChangeScene();
+            break;
+        case 1:
+            break;
+        case 2:
+            Game_ChangeScene(GAME_STATE::About);
+            break;
+        default:
+            break;
+        }
+    }
 }
 void HomeScene::Render()
 {
     HomeScene::Draw_Background();
+    for (int i = 0; i < 3; i++) {
+        FontPrint(font, 450, 500 + i * 40, Resource::Home::OptionsStr[i], i == HomeScene::choose ? Resource::Home::SelectedColor : Resource::Home::UnselectedColor);
+    }
 }

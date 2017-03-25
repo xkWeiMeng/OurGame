@@ -1,6 +1,3 @@
-// Beginning Game Programming
-// Chapter 2 - Game Loop project
-
 #include <windows.h>
 #include <iostream>
 #include <time.h>
@@ -15,6 +12,7 @@ bool Gameover = false;
 // Window callback function
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static RECT rect;
     switch (message)
     {
     case WM_DESTROY:
@@ -22,8 +20,25 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
     case WM_PAINT:
+        //获取窗口在屏幕的坐标
+        if (!Global::Window::FullScreen)
+        {
+            GetClientRect(hWnd, &rect);
+            Global::Window::x = rect.left;
+            Global::Window::y = rect.top;
+            
+        }
         if (!Gameover)
             Game_Render(hWnd, device);
+        break;
+        /*case WM_SIZE://不绘制标题栏
+            LONG_PTR Style = ::GetWindowLongPtr(hWnd, GWL_STYLE);
+            Style = Style &~WS_CAPTION &~WS_SYSMENU &~WS_SIZEBOX;
+            ::SetWindowLongPtr(hWnd, GWL_STYLE, Style);
+            break;*/
+    case WM_ACTIVATE:
+        Global::Window::isActity = !(wParam == WA_INACTIVE);
+        break;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -81,7 +96,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     return 1;
 }
-
+DWORD currentTime = 0;
+DWORD lastCurrentTime = 0;
+int currentCount = 0;
+int refreshTime = 0;
 // Entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -99,27 +117,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     while (!Gameover)
     {
-        //process Windows events
+        //如果有Windows消息则优先处理
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
-        else
-        {
-            DWORD timeInPerFrame = 1000.0f / Global::Window::constFps;    //计算每帧的频率
-            DWORD timeBegin = GetTickCount();           //循环开始的时间  
-            Game_Update(window);                        //directX循环
-            Game_Render(window, device);                //directX渲染
-            DWORD timePhase = GetTickCount() - timeBegin; //循环耗费的时间
-            if (timePhase < timeInPerFrame)                //循环耗费的时间<每帧的时间
-            {
-                Sleep(DWORD(timeInPerFrame - timePhase)); //将剩余的时间等待
+        else {
+            //如果窗口没有激活，并且也不允许后台运行游戏时，就跳过所有逻辑处理
+            if (Global::Window::isActity == false) {
+                if (Global::Window::EnableBackgroundRunning == false)
+                    continue;
             }
+
+            //获取当前时间，精确到毫秒
+            currentTime = timeGetTime();
+
+            //-------计算帧率--------
+            //每执行一次循环currentCount自加1
+            currentCount++;
+            //相比上一次循环过了1秒钟后，currentCount即为当前的FPS帧率
+            if (currentTime > lastCurrentTime + 1000)
+            {
+                Global::Debug::currentFPS = currentCount;
+                currentCount = 0;
+                lastCurrentTime = currentTime;
+            }
+            //-----------------------
+
+            //设定逻辑刷新速度为指定的帧率，当与上一次刷新的时间间隔超过了帧率的倒数时，执行Update
+            if (currentTime > refreshTime + 1000.0f / Global::Window::targetFps)
+            {
+                refreshTime = currentTime;
+                Game_Update(window);//DirectX循环
+            }
+
+            //其余时间全用来渲染
+            Game_Render(window, device);//DirectX渲染
         }
     }
-
-    //free game resources
+    //释放资源
     Game_Free(window, device);
 
     return msg.wParam;
@@ -130,6 +167,7 @@ void EndApplication()
 {
     PostMessage(window, WM_DESTROY, 0, 0);
 }
+//弹出一个以游戏标题为标题，带有一个确定按钮的消息框
 void ShowMessage(string text)
 {
     MessageBox(window, text.c_str(), Global::Window::GameTitle.c_str(), MB_OK);

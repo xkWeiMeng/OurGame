@@ -1,6 +1,3 @@
-//  Beginning Game Programming
-//  MyDirectX.h
-
 #pragma once
 
 //header files
@@ -37,9 +34,9 @@ using namespace std;
 
 //Direct3D objects
 extern LPDIRECT3D9 d3d;
-extern LPDIRECT3DDEVICE9 d3ddev;
-extern LPDIRECT3DSURFACE9 backbuffer;
-extern LPD3DXSPRITE spriteobj;
+extern LPDIRECT3DDEVICE9 d3dDev;
+extern LPDIRECT3DSURFACE9 backBuffer;
+extern LPD3DXSPRITE spriteObj;
 
 //sprite structure
 struct SPRITE
@@ -70,7 +67,6 @@ struct SPRITE
     }
 };
 
-//Direct3D functions
 bool Direct3D_Init(HWND hwnd, int width, int height, bool fullscreen);
 void Direct3D_Shutdown();
 LPDIRECT3DSURFACE9 LoadSurface(string filename);
@@ -93,16 +89,30 @@ int Collision(SPRITE sprite1, SPRITE sprite2);
 //distance based collision detection
 bool CollisionD(SPRITE sprite1, SPRITE sprite2);
 
-//DirectInput objects, devices, and states
-extern LPDIRECTINPUT8 dinput;
-extern LPDIRECTINPUTDEVICE8 dimouse;
-extern LPDIRECTINPUTDEVICE8 dikeyboard;
-extern DIMOUSESTATE mouse_state;
+//DirectInput对象
+extern LPDIRECTINPUT8 dInput;
+//鼠标设备
+extern LPDIRECTINPUTDEVICE8 diMouse;
+//键盘设备
+extern LPDIRECTINPUTDEVICE8 diKeyboard;
+
+////鼠标状态
+//extern DIMOUSESTATE mouseState;
+
+//手柄状态
 extern XINPUT_GAMEPAD controllers[4];
 
-//DirectInput functions
+//鼠标坐标
+extern POINT mousePoint;
+
+#define MLButton 0
+#define MRButton 1
+#define MMButton 2
+
+bool Key_Up(int);
+
 bool DirectInput_Init(HWND);
-void DirectInput_Update();
+void DirectInput_Update(HWND);
 void DirectInput_Shutdown();
 bool Key_Down(int);
 int Mouse_Button(int);
@@ -133,7 +143,6 @@ CSound *LoadSound(string filename);
 void PlaySound(CSound *sound);
 void LoopSound(CSound *sound);
 void StopSound(CSound *sound);
-
 
 //define the MODEL struct
 struct MODEL
