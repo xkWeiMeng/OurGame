@@ -2,6 +2,8 @@
 #include "Global.h"
 #include "DirectX.h"
 #include"GameMain.h"
+
+
 using namespace Global;
 using namespace Global::Window;
 
@@ -30,6 +32,7 @@ bool HomeScene::Init()
         ShowMessage("背景图载入失败");
         return false;
     }
+
     HomeScene::choose = 0;
     HomeScene::font = MakeFont("微软雅黑", 32);
     //DXSound组件是软解码，库里暂时只支持wav
@@ -73,6 +76,7 @@ void HomeScene::Update()
             //Game_ChangeScene();
             break;
         case 1:
+			Game_ChangeScene(GAME_STATE::Playing);
             break;
         case 2:
             Game_ChangeScene(GAME_STATE::About);
@@ -86,6 +90,6 @@ void HomeScene::Render()
 {
     HomeScene::Draw_Background();
     for (int i = 0; i < 3; i++) {
-        FontPrint(font, 450, 500 + i * 40, Resource::Home::OptionsStr[i], i == HomeScene::choose ? Resource::Home::SelectedColor : Resource::Home::UnselectedColor);
+        FontPrint(font, 450, 700 + i * 40, Resource::Home::OptionsStr[i], i == HomeScene::choose ? Resource::Home::SelectedColor : Resource::Home::UnselectedColor);
     }
 }

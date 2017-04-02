@@ -21,7 +21,7 @@ namespace Global {
     namespace Window {
         const string GameTitle = "Our Game";
         const int ScreenWidth = 1024;
-        const int ScreenHeight = 768;
+        const int ScreenHeight = 960;
         //´°¿ÚµÄ×ø±ê
         extern int x, y;
         extern bool EnableBackgroundRunning;

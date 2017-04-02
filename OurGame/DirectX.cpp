@@ -61,6 +61,7 @@ bool Direct3D_Init(HWND window, int width, int height, bool fullscreen)
 
     //create sprite object
     D3DXCreateSprite(d3dDev, &spriteObj);
+
     return 1;
 }
 // Õ∑≈Direct3D

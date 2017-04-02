@@ -71,19 +71,22 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     //create a new window
+	long MetricsX = ::GetSystemMetrics(SM_CXSCREEN);//获取显示器分辨率用于让窗口居中
+	long MetricsY = ::GetSystemMetrics(SM_CYSCREEN);
+	//create a new window
+
     window = CreateWindow(
         Global::Window::GameTitle.c_str(),              //window class
         Global::Window::GameTitle.c_str(),              //title bar
         WS_OVERLAPPEDWINDOW,   //window style
-        CW_USEDEFAULT,         //x position of window
-        CW_USEDEFAULT,         //y position of window
+		MetricsX / 2 - Global::Window::ScreenWidth / 2,         //x position of window
+		MetricsY / 2 - Global::Window::ScreenHeight / 2,         //y position of window
         Global::Window::ScreenWidth,                   //width of the window
         Global::Window::ScreenHeight,                   //height of the window
         NULL,                  //parent window
         NULL,                  //menu
         hInstance,             //application instance
         NULL);                 //window parameters
-
                                //was there an error creating the window?
     if (window == 0) return 0;
 

@@ -103,7 +103,9 @@ void Game_ChangeScene(GAME_STATE to)
         {
         case GAME_STATE::Home:
             scene = new HomeScene();
+			break;
         case GAME_STATE::Playing:
+			scene = new GamingScene();
             break;
         case GAME_STATE::About:
             scene = new AboutScene();
