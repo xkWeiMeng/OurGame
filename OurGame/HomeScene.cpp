@@ -64,7 +64,7 @@ void HomeScene::Update()
     }
     if (Key_Up(DIK_UP))
     {
-        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 0;
+        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 2;
         HomeScene::choose %= 3;
     }
     if (Key_Up(DIK_SPACE))
