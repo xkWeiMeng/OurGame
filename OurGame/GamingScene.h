@@ -4,30 +4,36 @@
 #include"Global.h"
 #include"Sound.h"
 enum Dirction {
-	lift,
-	right,
 	up,
-	below
+	right,
+	below,
+	lift
 };
 class Bullet {
 public:
 	SPRITE bullet;
 	int Speed;//子弹速度
 	int Dir;//子弹方向
+	int BoomFlag;
+	bool Power;
 	Bullet(int ,int,int,int);//子弹初始化
 	bool B_Crash_and_Move();//子弹碰撞检测
-	void Draw();
+	bool Draw();
 private:
 
 };
 struct BulletList {
 	Bullet*bullet;
 	BulletList*next;
+	BulletList*last;
+
 };
 
 struct BulletListHead {
 	BulletList*next;
 };
+
+
 class GamingScene:public Scene
 {
 public:
@@ -38,7 +44,6 @@ public:
 	virtual void Render();
 	virtual void Update();
 };
-
 
 
 class Player {
@@ -54,4 +59,17 @@ public:
 	int Dir;//玩家方向
 	int Grade;//玩家等级
 	bool Shoot();
+};
+class Enemy :public Player
+{
+
+};
+
+struct EnemyList {
+	Enemy *enemy;
+	EnemyList*last, *next;
+};
+
+struct EnemyListHead {
+	Enemy*next;
 };

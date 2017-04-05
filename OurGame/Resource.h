@@ -31,7 +31,14 @@ namespace Resource {
 		char*const Something = "Resources\\Texture\\杂项.bmp";
 		char*const Tile = "Resources\\Texture\\砖.bmp";
 		char*const Player_1 = "Resources\\Texture\\玩家一.bmp";
+		char*const Player_2 = "Resources\\Texture\\玩家二.bmp";
 		char*const Bullet = "Resources\\Texture\\子弹.bmp";
+		char*const Boom1 = "Resources\\Texture\\爆炸一.bmp";
+		char*const Boom2 = "Resources\\Texture\\爆炸二.bmp";
+		char*const Enemy = "Resources\\Texture\\敌人.bmp";
+		char*const Award = "Resources\\Texture\\奖励.bmp";
+		char*const GameOver = "Resources\\Texture\\游戏结束.bmp";
+		char*const Shield = "Resources\\Texture\\盾牌.bmp";
 
 	}
 }

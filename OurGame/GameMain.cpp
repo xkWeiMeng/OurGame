@@ -102,8 +102,8 @@ void Game_ChangeScene(GAME_STATE to)
         switch (to)
         {
         case GAME_STATE::Home:
-            scene = new HomeScene();
-			break;
+       //     scene = new HomeScene();
+		//	break;
         case GAME_STATE::Playing:
 			scene = new GamingScene();
             break;
