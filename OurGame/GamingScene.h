@@ -62,8 +62,14 @@ public:
 };
 class Enemy :public Player
 {
+public:
+	Enemy(int x,int y,int speed,int hp,int as,int,int);
+	bool Draw();
+	int DamageFlag;
+	bool MoveStage;
 
 };
+
 
 struct EnemyList {
 	Enemy *enemy;
@@ -71,5 +77,22 @@ struct EnemyList {
 };
 
 struct EnemyListHead {
-	Enemy*next;
+	EnemyList*next;
+};
+
+class BoomFire {
+public:
+	int x;
+	int y;
+	int Time;
+	int WhatBoom;
+	bool Draw();
+	BoomFire(int ,int ,int );
+};
+struct BoomList{
+	BoomFire*boom;
+	BoomList*last, *next;
+};
+struct BoomListHead {
+	BoomList*next;
 };

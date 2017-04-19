@@ -6,6 +6,7 @@ namespace Sound {
 	 CSound*GameOver;
 	 CSound*Moving;
 	 CSound*Stop;
+	 CSound*BGM;
 }
 using namespace Sound;
 
@@ -22,6 +23,10 @@ void Sound::Sound_Init()
 	Stop = LoadSound(Resource::Sound_Rescource::Stop);
 	if (Stop == NULL)
 		ShowMessage("Ì¹¿ËÍ£Ö¹ÒıÇæÉùÒô×°ÔØÊ§°Ü");
+
+	BGM = LoadSound(Resource::Sound_Rescource::BGM);
+	if (BGM == NULL)
+		ShowMessage("BGM×°ÔØÊ§°Ü");
 	/*
 	GameOver = LoadSound(Resource::Sound_Rescource::GameOver);
 	if (GameOver == NULL)

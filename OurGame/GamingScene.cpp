@@ -11,7 +11,7 @@ LPDIRECT3DTEXTURE9 Player_2 = NULL;
 LPDIRECT3DTEXTURE9 Bullet_TXTTURE = NULL;
 LPDIRECT3DTEXTURE9 Enemy_TXTTURE = NULL;
 LPDIRECT3DTEXTURE9 Award = NULL;
-LPDIRECT3DTEXTURE9 Boom1 = NULL;
+LPDIRECT3DTEXTURE9 Boom1 = NULL; 
 LPDIRECT3DTEXTURE9 Boom2 = NULL;
 LPDIRECT3DTEXTURE9 GameOver = NULL;
 LPDIRECT3DTEXTURE9 Shield = NULL;
@@ -19,7 +19,10 @@ LPDIRECT3DTEXTURE9 Shield = NULL;
 Player player;
 /*工具函数*/
 int Crash(int x, int y, int w, int h, int speed, int dir, bool power);
-BulletListHead bulletlisthead;
+
+BulletListHead bulletlisthead;//子弹链表头
+EnemyListHead enemylisthead;//敌人链表头
+BoomListHead boomlisthead;//爆炸链表头
 int Map[13][13] = { //第一个是y轴，第二个是x轴
 	{1,2,3,4,5,6,7,8,9,10,11,12,13},
 	{2,14,15,16,17,18,19,20,21,22,23,24,25},
@@ -37,12 +40,64 @@ int Map[13][13] = { //第一个是y轴，第二个是x轴
 
 };//地图
 
+//敌人的构造函数
+Enemy::Enemy(int x, int y, int speed, int hp, int as,int grade,int dir)
+{
+	player.x = x;
+	player.y = y;
+	Speed = speed;
+	Health_Point = hp;
+	Attack_Speed = as;
+	Grade = grade;
+	Dir = dir;
+}
+
+bool Enemy::Draw()
+{
+	if (DamageFlag == 1)
+	{
+		return false;
+	}
+	else
+	{
+		if (Grade <= 3) {
+			if (MoveStage) {
+				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+					Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+				MoveStage = !MoveStage;
+			}
+			else
+			{
+				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+					Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+				MoveStage = !MoveStage;
+			}
+		}
+		else
+		{
+			if (MoveStage) {
+				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+					Dir * 8 + Grade * 2+24, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+				MoveStage = !MoveStage;
+			}
+			else
+			{
+				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+					Dir * 8 + Grade * 2 + 25, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+				MoveStage = !MoveStage;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 //初始化玩家信息
 Player::Player()
 {
-	Health_Point = 1;
+	Health_Point = 1;//玩家血量
 	Speed = 10;
-	Attack_Speed = 5;
+	Attack_Speed = 10;
 	Dir = Dirction::up;
 	Grade = 0;
 	player.scaling = 2;
@@ -72,9 +127,20 @@ bool Player::Shoot() {
 	else
 	{
 		BulletList*d = new BulletList;
-		d->next = c->next;
-		c->next = d;
-		d->next->last = d;
+		d->bullet = b;
+		if (c->next != NULL)
+		{
+			d->next = c->next;
+			c->next = d;
+			d->next->last = d;
+			d->last = c;
+		}
+		else
+		{
+			c->next = d;
+			d->last = c;
+			d->next = NULL;
+		}
 	}
 		return true;
 }
@@ -161,16 +227,58 @@ bool Bullet::Draw()
 		}
 		return true;
 	}
-	else if (BoomFlag == 1)
-	{
-
-		return false;
-	}
 	else
 	{
+		switch (Dir)
+		{
+		case Dirction::up:
+			bullet.x -= 22;
+			bullet.y -= 5;
+			break;
+		case Dirction::below:
+			bullet.x -= 22;
+			bullet.y -= 25;
+			break;
+		case Dirction::lift:
+			bullet.x -= 5;
+			bullet.y -= 22;
+			break;
+		case Dirction::right:
+			bullet.x -= 27;
+			bullet.y -= 22;
+			break;
+		default:
+			break;
+		}
+		BoomFire*b = new BoomFire(bullet.x, bullet.y, BoomFlag);
+		BoomList*h = boomlisthead.next;
+		BoomList*New = new BoomList;
+		New->boom = b;
+		if (h == NULL)
+		{
+			boomlisthead.next = New;
+			New->last = NULL;
+			New->next = NULL;
+		}
+		else
+		{
+			if (h->next != NULL)
+			{
+				New->next = h->next;
+				h->next = New;
+				New->next->last = New;
+				New->last = h;
+			}
+			else
+			{
+				h->next = New;
+				New->last = h;
+				New->next = NULL;
+			}
+		}
 		return false;
-
 	}
+
 }
 
 int Crash(int x,int y,int w,int h,int speed,int dir,bool power) {
@@ -394,6 +502,7 @@ GamingScene::~GamingScene()
 
 bool GamingScene::Init()
 {
+	srand((unsigned)time(0));
 
 	HRESULT result = d3dDev->CreateOffscreenPlainSurface(
 		100,
@@ -455,7 +564,7 @@ bool GamingScene::Init()
 		ShowMessage("装载 子弹 纹理失败!");
 		return false;
 	}
-	Boom1 = LoadTexture(Resource::Texture::Boom1, D3DCOLOR_XRGB(4, 4, 4));
+	Boom1 = LoadTexture(Resource::Texture::Boom1, D3DCOLOR_XRGB(0, 0, 0));
 	if (!Boom1)
 	{
 		ShowMessage("装载 爆炸一 纹理失败!");
@@ -491,7 +600,12 @@ bool GamingScene::Init()
 		ShowMessage("装载 游戏结束 纹理失败!");
 		return false;
 	}
-
+	Enemy_TXTTURE= LoadTexture(Resource::Texture::Enemy, D3DCOLOR_XRGB(4, 4, 4));
+	if (!Enemy_TXTTURE)
+	{
+		ShowMessage("装载 敌人 纹理失败!");
+		return false;
+	}
 	RECT rect;
 	int n = 0,i=960;//无论窗口大小，游戏分辨率总是不变
 	for (; n < Global::Window::ScreenHeight/2; n+=2,i-=2)
@@ -502,6 +616,7 @@ bool GamingScene::Init()
 		d3dDev->StretchRect(GrayRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
 		d3dDev->EndScene();
 		d3dDev->Present(NULL, NULL, NULL, NULL);
+		Sleep(1);
 	}
 	Sound::Sound_Init();//初始化声音资源
 	Sound::Start->Play();
@@ -516,6 +631,13 @@ void GamingScene::End()
 void GamingScene::Render()
 {
 		d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
+
+		Sprite_Transform_Draw(Boom1, 600, 600,
+			28, 28, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+
+		Sprite_Transform_Draw(Boom2, 700, 700,
+			64, 64, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+
 		/*游戏边框*/
 		RECT rect;
 		FillRect(rect, 0, 1024, 32, 64);   //分辨率不为1024*960时需要修改
@@ -556,7 +678,7 @@ void GamingScene::Render()
 		//画地图
 		DrawMap();
 		Sprite_Transform_Draw(Tile, 512, 832, 32, 32, 5, 7, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		//渲染子弹
+		//渲染子弹 并清除已失效子弹
 		BulletList*bp = bulletlisthead.next,*buf;
 		while (bp != NULL)
 		{
@@ -564,43 +686,141 @@ void GamingScene::Render()
 			bp = bp->next;
 			else
 			{
-				if (bp->last != NULL&&bp->next != NULL) {
+				if (bp->last != NULL&&bp->next != NULL)
+				{
 					buf = bp->next;
 					bp->last->next = bp->next;
 					delete bp;
 					bp = buf;
 				}
-				else if (bp->last == NULL)
-					bulletlisthead.next = bp->next;
-				else
+				else if (bp->last == NULL&&bp->next == NULL)
+				{
 					delete bp;
+					bp = NULL;
+					bulletlisthead.next = NULL;
+				}
+				else if (bp->last == NULL&&bp->next != NULL)
+				{
+					bulletlisthead.next = bp->next;
+					delete bp;
+					bp = bulletlisthead.next;
+					bp->last = NULL;
+				}
+				else//子弹链表尾
+				{
+					bp->last->next = NULL;
+					delete bp;
+					bp = NULL;
+				}
 			}
 		}
 		
+		//渲染敌人
+		EnemyList *ep = enemylisthead.next, *ebuf;
+		while (ep != NULL)
+		{
+			if (ep->enemy->Draw())
+				ep = ep->next;
+			else
+			{
+				if (ep->last != NULL&&ep->next != NULL)
+				{
+					ebuf = ep->next;
+					ep->last->next = ep->next;
+					delete ep;
+					ep = ebuf;
+				}
+				else if (ep->last == NULL&&ep->next == NULL)
+				{
+					delete ep;
+					ep = NULL;
+					enemylisthead.next = NULL;
+				}
+				else if (ep->last == NULL&&ep->next != NULL)
+				{
+					enemylisthead.next = ep->next;
+					delete ep;
+					ep = enemylisthead.next;
+					ep->last = NULL;
+				}
+				else//敌人链表尾
+				{
+					ep->last->next = NULL;
+					delete ep;
+					ep = NULL;
+				}
+			}
+		}
+
+		//渲染爆炸
+		BoomList *pboom = boomlisthead.next, *bbuf;
+		while (pboom != NULL)
+		{
+			if (pboom->boom->Draw())
+				pboom = pboom->next;
+			else
+			{
+				if (pboom->last != NULL&&pboom->next != NULL)
+				{
+					bbuf = pboom->next;
+					pboom->last->next = pboom->next;
+					delete pboom;
+					pboom = bbuf;
+				}
+				else if (pboom->last == NULL&&pboom->next == NULL)
+				{
+					delete pboom;
+					pboom = NULL;
+					boomlisthead.next = NULL;
+				}
+				else if (pboom->last == NULL&&pboom->next != NULL)
+				{
+					boomlisthead.next = pboom->next;
+					delete pboom;
+					pboom = boomlisthead.next;
+					pboom->last = NULL;
+				}
+				else//爆炸链表尾
+				{
+					pboom->last->next = NULL;
+					delete pboom;
+					pboom = NULL;
+				}
+			}
+		}
+
+
 		DIDA();//产生时间信息
 }
 void GamingScene::Update()
 {
 
 	if (KEY_DOWN(VK_UP)&&!KEY_DOWN(VK_RIGHT)&& !KEY_DOWN(VK_LEFT))
-	{
+	{			
 		player.player.y -= player.Speed;
+		if (player.player.y < 64)
+			player.player.y = 64;
 		player.Dir = Dirction::up;
 	}
 	if (KEY_DOWN(VK_DOWN) && !KEY_DOWN(VK_RIGHT) && !KEY_DOWN(VK_LEFT))
 	{
 		player.player.y += player.Speed;
+		if (player.player.y > 840)
+			player.player.y = 840;
 		player.Dir = Dirction::below;
 	}
 	if (KEY_DOWN(VK_LEFT))
 	{
 		player.player.x -= player.Speed;
+		if (player.player.x < 64)
+			player.player.x = 64;
 		player.Dir = Dirction::lift;
-		player.player.frame = 24;
 	}
 	if (KEY_DOWN(VK_RIGHT))
 	{
 		player.player.x += player.Speed;
+		if (player.player.x > 840)
+			player.player.x = 840;
 		player.Dir = Dirction::right;
 	}
 	//玩家射击
@@ -624,6 +844,75 @@ void GamingScene::Update()
 		bp->bullet->B_Crash_and_Move();
 		bp = bp->next;
 	}
+	//更新敌人逻辑
+	static int BornEnemy =30;//生成敌人记时器
+	static int NeedBornEnemy = 1;
+	static int EnemyNumber = 0;
+	if(NeedBornEnemy)
+	if (ShowTime)//ShowTime 100ms一次
+		BornEnemy++;
+
+	if (BornEnemy >= 30)
+	{
+		EnemyNumber++;
+		if (EnemyNumber > 10)
+			NeedBornEnemy = 0;
+
+		Enemy*e = new Enemy(rand()%896,rand()%896,2,1,1,rand()%7,rand()%3);
+		EnemyList*h = enemylisthead.next;
+
+		EnemyList*newE = new EnemyList;
+		newE->enemy = e;
+		if (h == NULL)
+		{
+			enemylisthead.next = newE;
+			newE->last = NULL;
+			newE->next = NULL;
+		}
+		else
+		{
+			if (h->next != NULL)
+			{
+				newE->next = h->next;
+				h->next = newE;
+				newE->next->last = newE;
+				newE->last = h;
+			}
+			else
+			{
+				h->next = newE;
+				newE->last = h;
+				newE->next = NULL;
+			}
+		}
+		BornEnemy = 0;
+
+	}
 	//读取时间完毕 
 	ShowTime = false;
+}
+
+bool BoomFire::Draw()
+{
+	if (WhatBoom == 1)
+	{
+		Sprite_Transform_Draw(Boom1,x,y,
+			28, 28, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+
+	}
+	else
+	{
+
+	}
+	Time++;
+	if (Time >= 60)
+		return false;
+	else
+		return true;
+}
+
+BoomFire::BoomFire(int x,int y,int wb):
+	x(x),y(y),WhatBoom(wb)
+{
+	Time = 0;
 }

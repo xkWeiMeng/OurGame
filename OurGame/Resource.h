@@ -24,7 +24,7 @@ namespace Resource {
 		char*const Moving = "Resources\\Sound\\坦克移动.wav";
 		char*const Stop = "Resources\\Sound\\坦克停止移动.wav";
 		char*const GameOver = "Resources\\Sound\\游戏结束.aif";
-
+		char*const BGM = "Resources\\Sound\\bgm.wav";
 	}
 	namespace Texture {
 		char*const Flag = "Resources\\Texture\\旗子.bmp";
