@@ -152,6 +152,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             if (currentTime > refreshTime + 1000.0f / Global::Window::targetFps)
             {
                 refreshTime = currentTime;
+
                 Game_Update(window);//DirectXÑ­»·
             }
 

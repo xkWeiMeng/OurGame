@@ -12,11 +12,13 @@ enum Dirction {
 class Bullet {
 public:
 	SPRITE bullet;
+	int Shooter;//子弹射击者
 	int Speed;//子弹速度
 	int Dir;//子弹方向
+	unsigned long ID;
 	int BoomFlag;
 	bool Power;
-	Bullet(int ,int,int,int);//子弹初始化
+	Bullet(int,int ,int,int,int);//子弹初始化
 	bool B_Crash_and_Move();//子弹碰撞检测
 	bool Draw();
 private:
@@ -59,14 +61,18 @@ public:
 	int Dir;//玩家方向
 	int Grade;//玩家等级
 	bool Shoot();
+	bool Draw();
+	bool Logic(int);
 };
 class Enemy :public Player
 {
 public:
-	Enemy(int x,int y,int speed,int hp,int as,int,int);
+	Enemy(int x,int y,int speed,int hp,int as,int,int,int);
 	bool Draw();
-	int DamageFlag;
-	bool MoveStage;
+	int DamageFlag;//毁坏标志
+	int XY;		//敌人坐标表的位置
+	bool MoveStage;//移动状态
+	unsigned long ID;
 
 };
 
@@ -84,10 +90,12 @@ class BoomFire {
 public:
 	int x;
 	int y;
+	unsigned long ID;
+	int Dir;
 	int Time;
 	int WhatBoom;
 	bool Draw();
-	BoomFire(int ,int ,int );
+	BoomFire(int ,int ,int ,int);
 };
 struct BoomList{
 	BoomFire*boom;
@@ -95,4 +103,14 @@ struct BoomList{
 };
 struct BoomListHead {
 	BoomList*next;
+};
+
+//无用对象链表
+struct UselessObj{
+	unsigned long ID;
+	UselessObj*next;
+};
+struct UselessObjHead
+{
+	UselessObj*next;
 };

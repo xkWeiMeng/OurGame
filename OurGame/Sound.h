@@ -10,5 +10,6 @@ extern CSound*Start;
 extern CSound*GameOver;
 extern CSound*Moving;
 extern CSound*Stop;
+extern CSound*BGM;
 }
 

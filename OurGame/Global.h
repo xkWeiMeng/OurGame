@@ -28,9 +28,9 @@ namespace Global {
         extern bool isActity;
         //鼠标灵敏度
         const float CursorSensitivity = 1.0f;
-        const bool FullScreen = false;
+        const bool FullScreen =  false;
         //指定逻辑刷新速度
-        const float targetFps = 120.0f;
+        const float targetFps = 240.0f;
     }
     namespace Home {
         //最终的选项，0：单人游戏；1：多人游戏；2：关于我们

@@ -17,6 +17,11 @@ namespace Resource {
     }
     namespace About {
         char* const Backgroud = "Resources\\About\\Background.jpg";
+		char* const BKG = "Resources\\About\\…Ωæ∞.bmp";
+		char* const Cloud1 = "Resources\\About\\‘∆1.png";
+		char* const Cloud2 = "Resources\\About\\‘∆2.png";
+		char* const Cloud3 = "Resources\\About\\‘∆3.png";
+		char* const Feiting = "Resources\\About\\∑…Õß.tga";
 
     }
 	namespace Sound_Rescource {

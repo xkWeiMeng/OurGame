@@ -66,9 +66,6 @@
     <ClCompile Include="GamingScene.cpp">
       <Filter>源文件\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="AboutScene.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="CursorGUI.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -77,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="Sound.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutScene.cpp">
+      <Filter>源文件\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
