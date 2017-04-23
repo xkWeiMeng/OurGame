@@ -3,6 +3,8 @@
 #include <time.h>
 #include"Global.h"
 #include"GameMain.h"
+#include "winres.h"
+#include"resource1.h"
 using namespace std;
 
 HWND window;
@@ -56,7 +58,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
-    wc.hIcon = NULL;
+    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(102));;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName = NULL;

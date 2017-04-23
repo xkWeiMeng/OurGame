@@ -19,7 +19,7 @@ public:
 	int BoomFlag;
 	bool Power;
 	Bullet(int,int ,int,int,int);//子弹初始化
-	bool B_Crash_and_Move();//子弹碰撞检测
+	bool Logic();//子弹碰撞检测
 	bool Draw();
 private:
 
@@ -53,27 +53,27 @@ public:
 	SPRITE player;
 	Player();
 	int Health_Point;//玩家血量
-					 //	int X;	//玩家横坐标
-					 //	int Y;	//玩家纵坐标
 	int BulletSpeed;//玩家子弹飞行速度
 	int Speed;//移动速度
 	int Attack_Speed;//攻击速度
 	int Dir;//玩家方向
 	int Grade;//玩家等级
-	bool Shoot();
+	bool Shoot(int);
 	bool Draw();
 	bool Logic(int);
+	bool GetHurt(int power);
 };
 class Enemy :public Player
 {
 public:
 	Enemy(int x,int y,int speed,int hp,int as,int,int,int);
 	bool Draw();
+	bool Logic(bool);
 	int DamageFlag;//毁坏标志
 	int XY;		//敌人坐标表的位置
 	bool MoveStage;//移动状态
 	unsigned long ID;
-
+	int Time;
 };
 
 
@@ -95,6 +95,7 @@ public:
 	int Time;
 	int WhatBoom;
 	bool Draw();
+	void Logic();
 	BoomFire(int ,int ,int ,int);
 };
 struct BoomList{

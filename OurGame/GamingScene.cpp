@@ -1,5 +1,5 @@
 #include "GamingScene.h"
-#define EnemyNumberMAX 20
+#define EnemyNumberMAX 21
 LPDIRECT3DSURFACE9 GrayRect=NULL;
 LPDIRECT3DSURFACE9 BlackRect = NULL;
 /*纹理*/
@@ -18,13 +18,19 @@ LPDIRECT3DTEXTURE9 Shield = NULL;
 /*对象*/
 Player player;
 /*工具函数*/
-int Crash(int iswho, int x, int y, int speed, int dir, bool power,int shooter=0);
+int  Crash(int iswho, int x, int y, int speed, int dir, bool power,int shooter=0);
+void ReadMap(int x, int y, RECT&rect1, RECT&rect2);//读取地图信息
 void AddUselessObj(unsigned long id);
 bool DelListNode(EnemyList*listhead, unsigned long id);//删除成功返回true，否则返回false
 bool DelListNode(BulletList*listhead, unsigned long id);//删除成功返回true，否则返回false
 bool DelListNode(BoomList*listhead, unsigned long id);//删除成功返回true，否则返回false
 void DelUselessObj();
 void ClearUselessObj();
+void CreateEnemy(int x, int y, int speed, int hp, int as, int grade, int dir);
+void CreateBoom(int x, int y, int whatboom, int Dir);
+int MaxNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
+int MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
+
 /*工具函数*/
 BulletListHead bulletlisthead;//子弹链表头
 EnemyListHead enemylisthead;//敌人链表头
@@ -39,15 +45,14 @@ int Map[13][13] = { //第一个是y轴，第二个是x轴
 	{ 3,26,27,28,29,0,0,0,0,0,0,0,0 },
 	{ 4,0,0,0,0,0,0,0,0,0,0,0,0 },
 	{ 5,0,0,0,0,0,0,0,0,0,0,0,0 },
-	{ 6,0,0,13,13,0,0,0,13,13,0,0,0 },
-	{ 7,0,0,0,13,13,0,13,13,0,0,0,0 },
-	{ 8,0,0,0,0, 0,13,0,0,0,0,0,0 },
-	{ 9,0,0,0,0,0,13,0,0,0,0,0,0 },
-	{10,0,0,0,13,13,0,13,13,0,0,0,0 },
-	{11,0,0,13,13,0,0,0,13,13,0,0,0 },
+	{ 6,0,0,1,0,0,0,1,0,1,0,0,1 },
+	{ 7,0,0,0,1,0,1,0,0,1,0,1,0 },
+	{ 8,0,0,0,0,1,0,0,0,1,1,0,0 },
+	{ 9,0,0,0,1,0,1,0,0,1,0,1,0 },
+	{10,0,0,1,0,0,0,1,0,1,0,0,1 },
+	{11,0,0,0,0,0,0,0,0,0,0,0,0 },
 	{12,0,0,0,0,0,0,0,0,0,0,0,0 },
 	{13,0,0,0,0,0,0,0,0,0,0,0,0 },
-
 };//地图
 
 //敌人的构造函数
@@ -61,44 +66,241 @@ Enemy::Enemy(int x, int y, int speed, int hp, int as,int grade,int dir,int xy)
 	Grade = grade;
 	Dir = dir;
 	XY = xy;
+	Time = 0;
 }
 //敌人的渲染方法
 bool Enemy::Draw()
 {
-	if (DamageFlag == 1)
-	{
-		return false;
+	if (Grade <= 3) {
+		if (MoveStage) {
+			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+				Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+			MoveStage = !MoveStage;
+		}
+		else
+		{
+			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+				Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+			MoveStage = !MoveStage;
+		}
 	}
 	else
 	{
-		if (Grade <= 3) {
-			if (MoveStage) {
-				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-					Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-				MoveStage = !MoveStage;
-			}
-			else
+		if (MoveStage) {
+			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+				Dir * 8 + Grade * 2 + 24, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+			MoveStage = !MoveStage;
+		}
+		else
+		{
+			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
+				Dir * 8 + Grade * 2 + 25, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+			MoveStage = !MoveStage;
+		}
+	}
+		return true;
+
+}
+//敌人逻辑
+bool Enemy::Logic(bool st)
+{
+	int d=Dir;
+	if (st)
+		Time++;
+	if (Time == 6)
+	{
+		d = rand() % 4;
+		Time = 0;
+		Shoot(2);
+	}
+
+	switch (d)
+	{
+	case Dirction::up:
+		Dir = Dirction::up;
+		player.y -= Speed;
+		if (player.y < 64)
+			player.y = 64;
+		break;
+	case Dirction::right:
+		Dir = Dirction::right;
+		player.x += Speed;
+		if (player.x > 840)
+			player.x = 840;
+		break;
+	case Dirction::below:
+		Dir = Dirction::below;
+		player.y += Speed;
+		if (player.y > 840)
+			player.y = 840;
+		break;
+	case Dirction::lift:
+		Dir = Dirction::lift;
+		player.x -= Speed;
+		if (player.x < 64)
+			player.x = 64;
+		break;
+	default:
+		break;
+	}
+	RECT PlayerRect = { player.x,player.y,player.x + 56,player.y + 56 };
+	RECT EnemyRect, Rect;
+	//和地图块的碰撞检测
+	{
+		int X1, Y1, X2, Y2;
+		switch (d)
+		{
+		case Dirction::up:
+			X1 = player.x / 64;
+			Y1 = player.y / 64;
+			X2 = (player.x + 56) / 64;
+			Y2 = Y1;
+			break;
+		case Dirction::right:
+			X1 = (player.x + 56) / 64;
+			Y1 = player.y / 64;
+			X2 = (player.x + 56) / 64;
+			Y2 = (player.y + 56) / 64;
+			break;
+		case Dirction::below:
+			X1 = (player.x + 56) / 64;
+			Y1 = (player.y + 56) / 64;
+			X2 = player.x / 64;
+			Y2 = Y1;
+			break;
+		case Dirction::lift:
+			X1 = player.x / 64;
+			Y1 = (player.y + 56) / 64;
+			X2 = player.x / 64;
+			Y2 = player.y / 64;
+			break;
+		default:
+			break;
+		}
+		RECT MapRect1, MapRect2, MapRect3, MapRect4;
+		bool Result1, Result2, Result3, Result4;
+		if (X1 == X2&&Y1 == Y2)
+		{
+			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
+			if (MapRect1.bottom != -1 || MapRect2.bottom != -1)
 			{
-				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-					Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-				MoveStage = !MoveStage;
+				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
+				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
+				if (Result1 || Result2)
+				{
+					if (Result1&&Result2)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							if (MapRect1.bottom > MapRect2.bottom)
+								player.y = MapRect1.bottom;
+							else
+								player.y = MapRect2.bottom;
+							break;
+						case Dirction::right:
+							if (MapRect1.left < MapRect2.left || MapRect2.left == -1)
+								player.x = MapRect1.left - 56;
+							else
+								player.x = MapRect2.left - 56;
+							break;
+						case Dirction::below:
+							if (MapRect1.top < MapRect2.top || MapRect2.top == -1)
+								player.y = MapRect1.top - 56;
+							else
+								player.y = MapRect2.top - 56;
+							break;
+						case Dirction::lift:
+							if (MapRect1.right > MapRect2.right)
+								player.x = MapRect1.right;
+							else
+								player.x = MapRect2.right;
+							break;
+						default:
+							break;
+						}
+					}
+					else if (Result1 && !Result2)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							player.y = MapRect1.bottom;
+							break;
+						case Dirction::right:
+							player.x = MapRect1.left - 56;
+							break;
+						case Dirction::below:
+							player.y = MapRect1.top - 56;
+							break;
+						case Dirction::lift:
+							player.x = MapRect1.right;
+							break;
+						default:
+							break;
+						}
+					}
+					else if (!Result1&&Result2)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							player.y = MapRect2.bottom;
+							break;
+						case Dirction::right:
+							player.x = MapRect2.left - 56;
+							break;
+						case Dirction::below:
+							player.y = MapRect2.top - 56;
+							break;
+						case Dirction::lift:
+							player.x = MapRect2.right;
+							break;
+						default:
+							break;
+						}
+					}
+				}
 			}
 		}
 		else
 		{
-			if (MoveStage) {
-				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-					Dir * 8 + Grade * 2+24, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-				MoveStage = !MoveStage;
-			}
-			else
+			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
+			ReadMap(X2 - 1, Y2 - 1, MapRect3, MapRect4);
+			if (MapRect1.bottom != -1 || MapRect2.bottom != -1 ||
+				MapRect3.bottom != -1 || MapRect4.bottom != -1)
 			{
-				Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-					Dir * 8 + Grade * 2 + 25, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-				MoveStage = !MoveStage;
+				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
+				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
+				Result3 = IntersectRect(&Rect, &MapRect3, &PlayerRect);
+				Result4 = IntersectRect(&Rect, &MapRect4, &PlayerRect);
+
+				if (Result1 || Result2 || Result3 || Result4)
+				{
+					switch (d)
+					{
+					case Dirction::up:
+						player.y = MaxNumber(MapRect1.bottom, MapRect2.bottom, MapRect3.bottom,
+							MapRect4.bottom, Result1, Result2, Result3, Result4);
+						break;
+					case Dirction::right:
+						player.x = MinNumber(MapRect1.left, MapRect2.left, MapRect3.left, MapRect4.left,
+							Result1, Result2, Result3, Result4) - 56;
+						break;
+					case Dirction::below:
+						player.y = MinNumber(MapRect1.top, MapRect2.top, MapRect3.top, MapRect4.top,
+							Result1, Result2, Result3, Result4) - 56;
+						break;
+					case Dirction::lift:
+						player.x = MaxNumber(MapRect1.right, MapRect2.right, MapRect3.right,
+							MapRect4.right, Result1, Result2, Result3, Result4);
+						break;
+					default:
+						break;
+					}
+				}
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -107,7 +309,7 @@ bool Enemy::Draw()
 Player::Player()
 {
 	Health_Point = 1;//玩家血量
-	Speed = 10;
+	Speed = 5;
 	Attack_Speed = 10;
 	Dir = Dirction::up;
 	Grade = 0;
@@ -122,8 +324,8 @@ Player::Player()
 	BulletSpeed = 10;
 }
 //玩家射击
-bool Player::Shoot() {
-	Bullet*b = new Bullet(0,Player::player.x,Player::player.y,
+bool Player::Shoot(int shooter) {
+	Bullet*b = new Bullet(shooter,Player::player.x,Player::player.y,
 		Player::BulletSpeed, Player::Dir);
 	IDNumber++;
 	b->ID = IDNumber;
@@ -163,6 +365,59 @@ bool Player::Draw()
 
 	return false;
 }
+//只为Player：：Logic服务的函数 
+int MaxNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4)
+{
+	int a[4] = { m1,m2,m3,m4 };
+	bool b[4] = { r1,r2,r3,r4 };
+	int    i, j;
+	int    temp;
+	bool   c;
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 3; j > i; j--)
+		{
+			if (a[j] < a[j - 1])
+			{
+				temp = a[j];
+				a[j] = a[j - 1];
+				a[j - 1] = temp;
+				c = b[j];
+				b[j] = b[j - 1];
+				b[j - 1] = c;
+			}
+		}
+	}
+	for (int i = 3; i >= 0; i--)
+		if (b[i])
+			return a[i];
+}
+int MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4)
+{
+	int a[4] = { m1,m2,m3,m4 };
+	bool b[4] = { r1,r2,r3,r4 };
+	int    i, j;
+	int    temp;
+	bool   c;
+	for (i = 0; i < 4; i++)
+	{
+		for (j = 3; j > i; j--)
+		{
+			if (a[j] < a[j - 1])
+			{
+				temp = a[j];
+				a[j] = a[j - 1];
+				a[j - 1] = temp;
+				c = b[j];
+				b[j] = b[j - 1];
+				b[j - 1] = c;
+			}
+		}
+	}
+	for (int i = 0; i < 4; i++)
+		if (b[i])
+			return a[i];
+}
 //玩家逻辑方法
 bool Player::Logic(int d)
 {
@@ -195,6 +450,203 @@ bool Player::Logic(int d)
 	default:
 		break;
 	}
+	RECT PlayerRect = { player.x,player.y,player.x + 56,player.y + 56 };
+	RECT EnemyRect, Rect;
+	//和地图块的碰撞检测
+	{
+		int X1, Y1, X2, Y2;
+		switch (d)
+		{
+		case Dirction::up:
+			X1 = player.x / 64;
+			Y1 = player.y / 64;
+			X2 = (player.x + 56) / 64;
+			Y2 = Y1;
+			break;
+		case Dirction::right:
+			X1 = (player.x + 56) / 64;
+			Y1 = player.y / 64;
+			X2 = (player.x + 56) / 64;
+			Y2 = (player.y + 56) / 64;
+			break;
+		case Dirction::below:
+			X1 = (player.x + 56) / 64;
+			Y1 = (player.y + 56) / 64;
+			X2 = player.x / 64;
+			Y2 = Y1;
+			break;
+		case Dirction::lift:
+			X1 = player.x / 64;
+			Y1 = (player.y + 56) / 64;
+			X2 = player.x / 64;
+			Y2 = player.y / 64;
+			break;
+		default:
+			break;
+		}
+		RECT MapRect1, MapRect2, MapRect3, MapRect4;
+		bool Result1, Result2, Result3, Result4;
+		if (X1 == X2&&Y1 == Y2)
+		{
+			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
+			if (MapRect1.bottom != -1 || MapRect2.bottom != -1)
+			{
+				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
+				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
+				if (Result1 || Result2)
+				{
+					if (Result1&&Result2)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							if (MapRect1.bottom > MapRect2.bottom)
+								player.y = MapRect1.bottom;
+							else
+								player.y = MapRect2.bottom;
+							break;
+						case Dirction::right:
+							if (MapRect1.left < MapRect2.left || MapRect2.left == -1)
+								player.x = MapRect1.left - 56;
+							else
+								player.x = MapRect2.left - 56;
+							break;
+						case Dirction::below:
+							if (MapRect1.top < MapRect2.top || MapRect2.top == -1)
+								player.y = MapRect1.top - 56;
+							else
+								player.y = MapRect2.top - 56;
+							break;
+						case Dirction::lift:
+							if (MapRect1.right > MapRect2.right)
+								player.x = MapRect1.right;
+							else
+								player.x = MapRect2.right;
+							break;
+						default:
+							break;
+						}
+					}
+					else if (Result1 && !Result2)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							player.y = MapRect1.bottom;
+							break;
+						case Dirction::right:
+							player.x = MapRect1.left - 56;
+							break;
+						case Dirction::below:
+							player.y = MapRect1.top - 56;
+							break;
+						case Dirction::lift:
+							player.x = MapRect1.right;
+							break;
+						default:
+							break;
+						}
+					}
+					else if (!Result1&&Result2)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							player.y = MapRect2.bottom;
+							break;
+						case Dirction::right:
+							player.x = MapRect2.left - 56;
+							break;
+						case Dirction::below:
+							player.y = MapRect2.top - 56;
+							break;
+						case Dirction::lift:
+							player.x = MapRect2.right;
+							break;
+						default:
+							break;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
+			ReadMap(X2 - 1, Y2 - 1, MapRect3, MapRect4);
+			if (MapRect1.bottom != -1 || MapRect2.bottom != -1 ||
+				MapRect3.bottom != -1 || MapRect4.bottom != -1)
+			{
+				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
+				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
+				Result3 = IntersectRect(&Rect, &MapRect3, &PlayerRect);
+				Result4 = IntersectRect(&Rect, &MapRect4, &PlayerRect);
+
+				if (Result1||Result2||Result3||Result4)
+				{
+					switch (d)
+					{
+					case Dirction::up:
+						player.y=MaxNumber(MapRect1.bottom, MapRect2.bottom, MapRect3.bottom,
+				MapRect4.bottom, Result1, Result2, Result3, Result4);
+						break;
+					case Dirction::right:
+						player.x = MinNumber(MapRect1.left, MapRect2.left, MapRect3.left, MapRect4.left,
+							Result1, Result2, Result3, Result4)-56;
+						break;
+					case Dirction::below:
+						player.y = MinNumber(MapRect1.top, MapRect2.top, MapRect3.top, MapRect4.top,
+							Result1, Result2, Result3, Result4)-56;
+						break;
+					case Dirction::lift:
+						player.x = MaxNumber(MapRect1.right, MapRect2.right , MapRect3.right,
+								MapRect4.right, Result1, Result2, Result3, Result4);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+	}
+	//和敌人的碰撞检测
+	EnemyList* ep = enemylisthead.next;
+	while (ep != NULL)
+	{
+		EnemyRect.left = ep->enemy->player.x;
+		EnemyRect.top = ep->enemy->player.y;
+		EnemyRect.bottom = ep->enemy->player.y + 56;
+		EnemyRect.right = ep->enemy->player.x + 56;
+		if (IntersectRect(&Rect, &EnemyRect, &PlayerRect))
+		{
+			// 碰到敌人后回退移动距离
+			switch (d)
+			{
+			case Dirction::up:
+				player.y = ep->enemy->player.y + 56;
+				break;
+			case Dirction::right:
+				player.x = ep->enemy->player.x - 56;
+				break;
+			case Dirction::below:
+				player.y = ep->enemy->player.y - 56;
+				break;
+			case Dirction::lift:
+				player.x = ep->enemy->player.x + 56;
+				break;
+			default:
+				break;
+			}
+		}
+		ep = ep->next;
+	}
+
+	return false;
+}
+
+bool Player::GetHurt(int power)
+{
+
 	return false;
 }
 
@@ -228,65 +680,18 @@ Bullet::Bullet(int shooter,int x, int y, int S, int D) :Speed(S), Dir(D),Shooter
 	}
 }
 //子弹移动和碰撞检测方法
-bool Bullet::B_Crash_and_Move()
+bool Bullet::Logic()
 {
 	//碰撞检测
-	int result = Crash( 0,bullet.x, bullet.y, Speed, Dir, Power);
+	int result = Crash( 0,bullet.x, bullet.y, Speed, Dir, Power,Shooter);
 	if (result == 1)
 	{
 		AddUselessObj(ID);//记录对象ID用于销毁
 		//创建爆炸
-		switch (Dir){
-		case Dirction::up:
-			bullet.x -= 22;
-			bullet.y -= 5;
-			break;
-		case Dirction::below:
-			bullet.x -= 22;
-			bullet.y -= 25;
-			break;
-		case Dirction::lift:
-			bullet.x -= 5;
-			bullet.y -= 22;
-			break;
-		case Dirction::right:
-			bullet.x -= 27;
-			bullet.y -= 22;
-			break;
-		default:
-			break;
-		}
-		BoomFire*b = new BoomFire(bullet.x, bullet.y, BoomFlag, Dir);
-		IDNumber++;
-		b->ID = IDNumber;
-		BoomList*h = boomlisthead.next;
-		BoomList*New = new BoomList;
-		New->boom = b;
-		if (h == NULL)
-		{
-			boomlisthead.next = New;
-			New->last = NULL;
-			New->next = NULL;
-		}
-		else
-		{
-			if (h->next != NULL)
-			{
-				New->next = h->next;
-				h->next = New;
-				New->next->last = New;
-				New->last = h;
-			}
-			else
-			{
-				h->next = New;
-				New->last = h;
-				New->next = NULL;
-			}
-		}
+		CreateBoom(bullet.x-20, bullet.y-20, 1, Dir);
 	}
 	if(result==2)
-		BoomFlag = 2;
+		AddUselessObj(ID);
 	//子弹逻辑移动
 	if (result == 1 || result == 2)
 		return true;
@@ -343,10 +748,38 @@ bool Bullet::Draw()
 
 }
 //碰撞检测
+int PCrash()
+{
+
+	return 1 ;
+}
 int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter) {
+	//地图边界
+	static  RECT MapEdgeTop = { 0,0,1024,64 },
+		         MapEdgeBelow = { 0,896,1024,960 },
+		         MapEdgeLeft = { 0,0,64,960 },
+				 MapEdgeRight = { 896,0,1024,960 };
 	//先检测子弹是否碰撞到敌人
 	RECT BulletRect = { x,y,x + 16,y + 16 };
 	RECT EnemyRect,Rect;
+	EnemyList* ep = enemylisthead.next;
+	if (shooter == 0)
+	{
+		while (ep != NULL)
+		{
+			EnemyRect.left = ep->enemy->player.x;
+			EnemyRect.top = ep->enemy->player.y;
+			EnemyRect.bottom = ep->enemy->player.y + 56;
+			EnemyRect.right = ep->enemy->player.x + 56;
+			if (IntersectRect(&Rect, &EnemyRect, &BulletRect))
+			{
+				AddUselessObj(ep->enemy->ID);
+				return 2;
+			}
+			ep = ep->next;
+		}
+	}
+	/*
 	for (int i = 0; i < EnemyNumberMAX; i++)
 	{
 		if (EnemyXY[i][0] == -1)
@@ -357,22 +790,22 @@ int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter) {
 		EnemyRect.right = EnemyXY[i][0] + 56;
 		if (IntersectRect(&Rect, &EnemyRect, &BulletRect))
 		{
-			EnemyList* ep = enemylisthead.next;
 			while (ep != NULL)
 			{
 				if (ep->enemy->player.x == EnemyRect.left)
 					if (ep->enemy->player.y == EnemyRect.top)
-						ep->enemy->DamageFlag = true; 
+					{
+						AddUselessObj(ep->enemy->ID);
+						EnemyXY[i][0] = -1;
+					}
 				ep = ep->next;
 			}
 			return 2;//目前为测试状态 正式版应为爆炸2
 		}
-	}
-
+	}*/
+	//检测是否碰撞到砖块
 	int X = x / 64;
 	int Y = y / 64;
-	if ((x + speed) < 64 || (x + speed) > 896 || (y + speed) < 64 || (y + speed) > 896)
-		return 1;
 	switch (Map[Y-1][X-1])
 	{
 	case 0:
@@ -439,8 +872,32 @@ int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter) {
 	default:
 		break;
 	}
+	for (int  i = 0; i < 4; i++)
+	{
+		switch (i)
+		{
+		case 0:
+			if (IntersectRect(&Rect, &MapEdgeBelow, &BulletRect))
+				return 1;
+			break;
+		case 1:
+			if (IntersectRect(&Rect, &MapEdgeLeft, &BulletRect))
+				return 1;
+			break;
+		case 2:
+			if (IntersectRect(&Rect, &MapEdgeRight, &BulletRect))
+				return 1;
+			break;
+		case 3:
+			if (IntersectRect(&Rect, &MapEdgeTop, &BulletRect))
+				return 1;
+			break;
+		default:
+			break;
+		}
+	}
 }
-//游戏地图绘画函数                   
+//游戏地图绘画函数       
 void DrawMap()
 {
 for (int i = 0; i<13; i++)
@@ -538,16 +995,182 @@ for (int i = 0; i<13; i++)
 		}
 }
 }
+/*创建对象*/
+//创建爆炸
+void CreateBoom(int x,int y,int whatboom,int Dir)
+{
+	BoomFire*b = new BoomFire(x,y, whatboom, Dir);
+	IDNumber++;
+	b->ID = IDNumber;
+	BoomList*h = boomlisthead.next;
+	BoomList*New = new BoomList;
+	New->boom = b;
+	if (h == NULL)
+	{
+		boomlisthead.next = New;
+		New->last = NULL;
+		New->next = NULL;
+	}
+	else
+	{
+		if (h->next != NULL)
+		{
+			New->next = h->next;
+			h->next = New;
+			New->next->last = New;
+			New->last = h;
+		}
+		else
+		{
+			h->next = New;
+			New->last = h;
+			New->next = NULL;
+		}
+	}
 
+}
+//创建敌人
+void CreateEnemy(int x,int y,int speed,int hp,int as,int grade,int dir)
+{
+	int NewEnemyX = x;
+	int NewEnemyY = y;
+	int EnemyI = 0;
+	//更新敌人坐标表
+	for (int i = 0; i < 20; i++)
+	{
+		if (EnemyXY[i][0] == -1) {
+			EnemyXY[i][0] = NewEnemyX;
+			EnemyXY[i][1] = NewEnemyY;
+			EnemyI = i;
+			break;
+		}
+	}
+	//生成敌人对象
+	Enemy*e = new Enemy(NewEnemyX, NewEnemyY, speed, hp, as, grade, dir, EnemyI);
+	IDNumber++;
+	e->ID = IDNumber;
+	EnemyList*h = enemylisthead.next;
+	EnemyList*newE = new EnemyList;
+	newE->enemy = e;
+	if (h == NULL)
+	{
+		enemylisthead.next = newE;
+		newE->last = NULL;
+		newE->next = NULL;
+	}
+	else
+	{
+		if (h->next != NULL)
+		{
+			newE->next = h->next;
+			h->next = newE;
+			newE->next->last = newE;
+			newE->last = h;
+		}
+		else
+		{
+			h->next = newE;
+			newE->last = h;
+			newE->next = NULL;
+		}
+	}
+
+}
 /*工具函数*/
 //填充RECT
-void FillRect(RECT&rect,long l, long r, long t, long b)
+void FillRect(RECT&rect,long l=-1, long r=-1, long t=-1, long b=-1)
 {
 	rect.left = l;
 	rect.right = r;
 	rect.top = t;
 	rect.bottom = b;
 }
+//读取地图信息
+void ReadMap(int x,int y,RECT&rect1, RECT&rect2)
+{
+	switch (Map[y][x])
+	{
+	case 0:
+	case 27:
+	case 28:
+	case 29:
+		FillRect(rect1);
+		FillRect(rect2);	
+		break;
+	case 1:
+	case 14:
+		FillRect(rect1, 64 * x + 64, 64 * x + 96, 64 * y + 64, 64 * y + 96);
+		FillRect(rect2);
+		break;
+	case 2:
+	case 15:
+		FillRect(rect1, 64 * x + 96, 64 * x + 128, 64 * y + 64, 64 * y + 96);
+		FillRect(rect2);
+		break;
+	case 3:		
+	case 16:
+		FillRect(rect1, 64 * x + 96, 64 * x + 128, 64 * y + 96, 64 * y + 128);
+		FillRect(rect2);
+		break;
+	case 4:	
+	case 17:
+		FillRect(rect1, 64 * x + 64, 64 * x + 96, 64 * y + 96, 64 * y + 128);
+		FillRect(rect2);
+		break;
+
+	case 5:
+	case 18:
+		FillRect(rect1, 64 * x + 64, 64 * x + 128, 64 * y + 64, 64 * y + 96);
+		FillRect(rect2);
+		break;
+	case 6:
+	case 19:
+		FillRect(rect1, 64 * x + 96, 64 * x + 128, 64 * y + 64, 64 * y + 128);
+		FillRect(rect2);
+		break;
+	case 7:
+	case 20:
+		FillRect(rect1, 64 * x + 64, 64 * x + 128, 64 * y + 96, 64 * y + 128);
+		FillRect(rect2);
+		break;
+	case 8:
+	case 21:
+		FillRect(rect1, 64 * x + 64, 64 * x + 96, 64 * y + 64, 64 * y + 128);
+		FillRect(rect2);
+		break;
+		//
+	case 9:
+	case 22:
+		FillRect(rect1, 64 * x + 64, 64 * x + 128, 64 * y + 64, 64 * y + 96);
+		FillRect(rect2, 64 * x + 64, 64 * x + 96, 64 * y + 96, 64 * y + 128);
+		break;
+	case 10:
+	case 23:
+		FillRect(rect1, 64 * x + 64, 64 * x + 128, 64 * y + 64, 64 * y + 96);
+		FillRect(rect2, 64 * x + 96, 64 * x + 128, 64 * y + 96, 64 * y + 128);
+		break;
+	case 11:
+	case 24:
+		FillRect(rect1, 64 * x + 96, 64 * x + 128, 64 * y + 64, 64 * y + 128);
+		FillRect(rect2, 64 * x + 64, 64 * x + 96, 64 * y + 96, 64 * y + 128);
+		break;
+	case 12:
+	case 25:
+		FillRect(rect1, 64 * x + 64, 64 * x + 128, 64 * y + 96, 64 * y + 128);
+		FillRect(rect2, 64 * x + 64, 64 * x + 96, 64 * y + 64, 64 * y + 96);
+		break;
+
+	case 13:
+	case 26:
+		FillRect(rect1, 64 * x + 64, 64 * x + 128, 64 * y + 64, 64 * y + 128);
+		FillRect(rect2);
+		break;
+
+	default:
+		break;
+	}
+}
+
 //画辅助网格
 void DrawNet()
 {
@@ -584,12 +1207,14 @@ void ClearUselessObj()
 				break;
 			}
 		}
-		if (bulletlisthead.next != NULL)
+		if (bulletlisthead.next == NULL)
+			break;
+		else
 			b = bulletlisthead.next;
 		if(up!=NULL)
 		up = up->next;
 	}
-	//清除失效敌人
+	//清除失效敌人并创造爆炸
 	up = uselessobjhead.next;
 	EnemyList*ep = enemylisthead.next;
 	while (up != NULL)
@@ -600,12 +1225,17 @@ void ClearUselessObj()
 				ep = ep->next;
 			else
 			{
+				CreateBoom(ep->enemy->player.x, ep->enemy->player.y, 2, ep->enemy->Dir);
 				DelListNode(enemylisthead.next, ep->enemy->ID);
 				DelUselessObj();
 				up = uselessobjhead.next;
 				break;
 			}
 		}
+		if (enemylisthead.next == NULL)
+			break;
+		else
+			ep = enemylisthead.next;
 		if (up != NULL)
 			up = up->next;
 	}
@@ -626,6 +1256,10 @@ void ClearUselessObj()
 				break;
 			}
 		}
+		if (boomlisthead.next == NULL)
+			break;
+		else
+			bp = boomlisthead.next;
 		if (up != NULL)
 			up = up->next;
 	}
@@ -669,7 +1303,7 @@ bool DelListNode(EnemyList*listhead, unsigned long id)//删除成功返回true，否则返
 					p->last->next = p->next;
 					p->next->last = p->last;
 				}
-				else
+				else 
 					p->last->next = NULL;
 			}
 			else if (p->next != NULL)
@@ -776,7 +1410,7 @@ GamingScene::GamingScene()
 
 
 GamingScene::~GamingScene()
-{
+{ 
 
 }
 //场景初始化
@@ -927,13 +1561,7 @@ void GamingScene::End()
 //游戏渲染
 void GamingScene::Render()
 {
-		d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
-
-		Sprite_Transform_Draw(Boom1, 600, 600,
-			28, 28, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-
-		Sprite_Transform_Draw(Boom2, 700, 700,
-			64, 64, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
 		/*游戏边框*/
 		RECT rect;
@@ -984,82 +1612,20 @@ void GamingScene::Render()
 		}
 		
 		//渲染敌人
-		EnemyList *ep = enemylisthead.next, *ebuf;
+		EnemyList *ep = enemylisthead.next;
 		while (ep != NULL)
 		{
-			if (ep->enemy->Draw())
-				ep = ep->next;
-			else//销毁失效敌人
-			{
-				//先更新敌人坐标表信息
-				EnemyXY[ep->enemy->XY][0] = -1;
-
-				if (ep->last != NULL&&ep->next != NULL)
-				{
-					ebuf = ep->next;
-					ep->last->next = ep->next;
-					delete ep;
-					ep = ebuf;
-				}
-				else if (ep->last == NULL&&ep->next == NULL)
-				{
-					delete ep;
-					ep = NULL;
-					enemylisthead.next = NULL;
-				}
-				else if (ep->last == NULL&&ep->next != NULL)
-				{
-					enemylisthead.next = ep->next;
-					delete ep;
-					ep = enemylisthead.next;
-					ep->last = NULL;
-				}
-				else//敌人链表尾
-				{
-					ep->last->next = NULL;
-					delete ep;
-					ep = NULL;
-				}
-			}
+			ep->enemy->Draw();
+			ep = ep->next;
 		}
 
 		//渲染爆炸
 		BoomList *pboom = boomlisthead.next, *bbuf;
 		while (pboom != NULL)
 		{
-			if (pboom->boom->Draw())
-				pboom = pboom->next;
-			else
-			{
-				if (pboom->last != NULL&&pboom->next != NULL)
-				{
-					bbuf = pboom->next;
-					pboom->last->next = pboom->next;
-					delete pboom;
-					pboom = bbuf;
-				}
-				else if (pboom->last == NULL&&pboom->next == NULL)
-				{
-					delete pboom;
-					pboom = NULL;
-					boomlisthead.next = NULL;
-				}
-				else if (pboom->last == NULL&&pboom->next != NULL)
-				{
-					boomlisthead.next = pboom->next;
-					delete pboom;
-					pboom = boomlisthead.next;
-					pboom->last = NULL;
-				}
-				else//爆炸链表尾
-				{
-					pboom->last->next = NULL;
-					delete pboom;
-					pboom = NULL;
-				}
-			}
+			pboom->boom->Draw();
+			pboom = pboom->next;
 		}
-
 
 		DIDA();//产生时间信息
 }
@@ -1103,7 +1669,7 @@ void GamingScene::Update()
 
 		if (ShootTime > 10 / player.Attack_Speed)
 		{
-			player.Shoot();
+			player.Shoot(0);
 			ShootTime = 0;
 		}
 		
@@ -1112,67 +1678,39 @@ void GamingScene::Update()
 	BulletList*bp = bulletlisthead.next;
 	while (bp!= NULL)
 	{
-		bp->bullet->B_Crash_and_Move();
+		bp->bullet->Logic();
 		bp = bp->next;
 	}
 	//更新敌人逻辑
+	EnemyList*ep = enemylisthead.next;
+	while(ep!=NULL)
+	{
+		ep->enemy->Logic(ShowTime);
+		ep = ep->next;
+	}
+	//生成新敌人
 	static int BornEnemy =30;//生成敌人记时器
 	static int NeedBornEnemy = 1;
 	static int EnemyNumber = 0;
 	if(NeedBornEnemy)
 	if (ShowTime)//ShowTime 100ms一次
 		BornEnemy++;
-
-	if (BornEnemy >= 30)//生成新的敌人
+	if (BornEnemy >= 10)//生成新的敌人
 	{
 		EnemyNumber++;
-		if (EnemyNumber > 10)
+		if (EnemyNumber > 20)
 			NeedBornEnemy = 0;
-
-		int NewEnemyX = rand() % 896;
-		int NewEnemyY = rand() % 896;
-		int EnemyI = 0;
-		//更新敌人坐标表
-		for (int i = 0; i < 20; i++)
-		{
-			if (EnemyXY[i][0] == -1) {
-				EnemyXY[i][0] = NewEnemyX;
-				EnemyXY[i][1] = NewEnemyY;
-				EnemyI = i;
-				break;
-			}
-		}
-		//生成敌人对象
-		Enemy*e = new Enemy(NewEnemyX,NewEnemyY,2,1,1,rand()%7,rand()%3,EnemyI);
-		IDNumber++;
-		e->ID = IDNumber;
-		EnemyList*h = enemylisthead.next;
-		EnemyList*newE = new EnemyList;
-		newE->enemy = e;
-		if (h == NULL)
-		{
-			enemylisthead.next = newE;
-			newE->last = NULL;
-			newE->next = NULL;
-		}
-		else
-		{
-			if (h->next != NULL)
-			{
-				newE->next = h->next;
-				h->next = newE;
-				newE->next->last = newE;
-				newE->last = h;
-			}
-			else
-			{
-				h->next = newE;
-				newE->last = h;
-				newE->next = NULL;
-			}
-		}
+		CreateEnemy(12*64, 12*64, 2, 1, 1, rand()%7, rand()%4);
+		CreateEnemy(12 * 64, 3 * 64, 5, 1, 1, rand() % 7, rand() % 4);
+		CreateEnemy(4 * 64, 3 * 64, 10, 1, 1, rand() % 7, rand() % 4);
 		BornEnemy = 0;
-
+	}
+	//更新爆炸逻辑
+	BoomList*boomp = boomlisthead.next;
+	while (boomp != NULL)
+	{
+		boomp->boom->Logic();
+		boomp = boomp->next;
 	}
 	//清除失效对象
 	ClearUselessObj();
@@ -1193,40 +1731,21 @@ bool BoomFire::Draw()
 	{
 		Sprite_Transform_Draw(Boom1, x, y,
 			28, 28, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		if (Time >= 50) {
-			if (Time == 50)
-				switch (Dir)//假定爆炸类型为boom1，其它爆炸类型在Draw()方法中修改
-				{
-				case Dirction::up:
-					x -= 50;
-					y -= 11;
-					break;
-				case Dirction::below:
-					x -= 50;
-					y -= 57;
-					break;
-				case Dirction::lift:
-					x -= 11;
-					y -= 50;
-					break;
-				case Dirction::right:
-					x -= 61;
-					y -= 50;
-					break;
-				default:
-					break;
-				}
-			Sprite_Transform_Draw(Boom2, x, y,
+		if (Time >= 10) 
+			Sprite_Transform_Draw(Boom2, x-36, y-36,
 				64, 64, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		}
 	}
-	Time++;
-	if (Time >= 100)
-		return false;
-	else
-		return true;
+	return true;
 }
-
+//爆炸逻辑
+void BoomFire::Logic()
+{
+	Time++;
+	if (Time >= 20)
+		AddUselessObj(ID);
+	return;
+}
+//爆炸构造函数
 BoomFire::BoomFire(int x,int y,int wb,int d):
 	x(x),y(y),WhatBoom(wb),Dir(d)
 {

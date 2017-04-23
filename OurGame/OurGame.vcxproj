@@ -174,10 +174,18 @@
     <ClInclude Include="GUIs.h" />
     <ClInclude Include="HomeScene.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Scenes.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="WinMain.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OurGame.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Desktop\icon.bmp" />
+    <Image Include="D:\下载\素材\tank.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
