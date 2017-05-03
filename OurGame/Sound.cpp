@@ -1,12 +1,12 @@
 #include "Sound.h"
 
-
 namespace Sound {
 	 CSound*Start;
 	 CSound*GameOver;
 	 CSound*Moving;
 	 CSound*Stop;
 	 CSound*BGM;
+	 CSound*PlayerBoom;
 }
 using namespace Sound;
 
@@ -27,6 +27,9 @@ void Sound::Sound_Init()
 	BGM = LoadSound(Resource::Sound_Rescource::BGM);
 	if (BGM == NULL)
 		ShowMessage("BGM×°ÔØÊ§°Ü");
+	PlayerBoom= LoadSound(Resource::Sound_Rescource::PlayerBoom);
+	if (PlayerBoom == NULL)
+		ShowMessage("Íæ¼Ò±¬Õ¨ÉùÒô×°ÔØÊ§°Ü");
 	/*
 	GameOver = LoadSound(Resource::Sound_Rescource::GameOver);
 	if (GameOver == NULL)

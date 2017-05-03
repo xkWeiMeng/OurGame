@@ -13,7 +13,7 @@ namespace Resource {
         char* const OptionsStr[] = { "单人游戏","多人游戏","关于我们" };
     }
     namespace Cursor {
-        char* const Normal = "Resources\\Cursor\\Normal.png";
+        char* const Normal = "Resources\\Cursor\\光标.png";
     }
     namespace About {
         char* const Backgroud = "Resources\\About\\Background.jpg";
@@ -30,6 +30,7 @@ namespace Resource {
 		char*const Stop = "Resources\\Sound\\坦克停止移动.wav";
 		char*const GameOver = "Resources\\Sound\\游戏结束.aif";
 		char*const BGM = "Resources\\Sound\\bgm.wav";
+		char*const PlayerBoom = "Resources\\Sound\\爆炸.wav";
 	}
 	namespace Texture {
 		char*const Flag = "Resources\\Texture\\旗子.bmp";

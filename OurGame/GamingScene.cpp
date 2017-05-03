@@ -15,10 +15,18 @@ LPDIRECT3DTEXTURE9 Boom1 = NULL;
 LPDIRECT3DTEXTURE9 Boom2 = NULL;
 LPDIRECT3DTEXTURE9 GameOver = NULL;
 LPDIRECT3DTEXTURE9 Shield = NULL;
-/*¶ÔÏó*/
+LPDIRECT3DTEXTURE9 Flicker[9] = { NULL };
+/*±äÁ¿*/
+unsigned long lasttime = 0;
+int StartTime = 0, NowTime, SurplusTime = 0;
+bool ShowTime = false;
+bool GameOverFlag = false;
+/*¶ÔÏó*/ 
 Player player;
+Player Player2;
+Player &Player1 = player;
 /*¹¤¾ßº¯Êı*/
-int  Crash(int iswho, int x, int y, int speed, int dir, bool power,int shooter=0);
+int  Crash(int iswho, int x, int y, int speed, int dir, bool power,int shooter,unsigned long id,int);
 void ReadMap(int x, int y, RECT&rect1, RECT&rect2);//¶ÁÈ¡µØÍ¼ĞÅÏ¢
 void AddUselessObj(unsigned long id);
 bool DelListNode(EnemyList*listhead, unsigned long id);//É¾³ı³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
@@ -30,33 +38,73 @@ void CreateEnemy(int x, int y, int speed, int hp, int as, int grade, int dir);
 void CreateBoom(int x, int y, int whatboom, int Dir);
 int MaxNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
 int MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
-
+void DIDA();
 /*¹¤¾ßº¯Êı*/
 BulletListHead bulletlisthead;//×Óµ¯Á´±íÍ·
 EnemyListHead enemylisthead;//µĞÈËÁ´±íÍ·
 UselessObjHead uselessobjhead;//Ê§Ğ§¶ÔÏóÁ´±íÍ·
 BoomListHead boomlisthead;//±¬Õ¨Á´±íÍ·
+MapPieceListHead mappiecelisthead;
 
 static unsigned long IDNumber = 0;
 int EnemyXY[EnemyNumberMAX][2];//µĞÈËÎ»ÖÃ×ø±ê±í
-int Map[13][13] = { //µÚÒ»¸öÊÇyÖá£¬µÚ¶ş¸öÊÇxÖá
-	{1,2,3,4,5,6,7,8,9,10,11,12,13},
-	{2,14,15,16,17,18,19,20,21,22,23,24,25},
-	{ 3,26,27,28,29,0,0,0,0,0,0,0,0 },
-	{ 4,0,0,0,0,0,0,0,0,0,0,0,0 },
-	{ 5,0,0,0,0,0,0,0,0,0,0,0,0 },
-	{ 6,0,0,1,0,0,0,1,0,1,0,0,1 },
-	{ 7,0,0,0,1,0,1,0,0,1,0,1,0 },
-	{ 8,0,0,0,0,1,0,0,0,1,1,0,0 },
-	{ 9,0,0,0,1,0,1,0,0,1,0,1,0 },
-	{10,0,0,1,0,0,0,1,0,1,0,0,1 },
-	{11,0,0,0,0,0,0,0,0,0,0,0,0 },
-	{12,0,0,0,0,0,0,0,0,0,0,0,0 },
-	{13,0,0,0,0,0,0,0,0,0,0,0,0 },
-};//µØÍ¼
+int Map[13][13]; //µÚÒ»¸öÊÇyÖá£¬µÚ¶ş¸öÊÇxÖá
+//µØÍ¼
+//ÓÎÏ·½áÊø»­Ãæ
+void ShowGameOver()
+{
+	static int x = 363,y = 960;
+	static int oldtime=GetTickCount();
 
+	if (GetTickCount() > oldtime + 17)
+	{
+		y -= 8;
+		oldtime = GetTickCount();
+	}
+	if(y<368)
+		Sprite_Transform_Draw(GameOver, x, 368, 248, 160,
+			0, 1, 0, 1, D3DCOLOR_XRGB(255, 255, 255));
+	else
+		Sprite_Transform_Draw(GameOver, x, y, 248, 160,
+			0, 1, 0, 1, D3DCOLOR_XRGB(255, 255, 255));
+
+}
+//µĞÈËAI
+int* idiot(int state, bool cflag)
+{
+	int a[2];
+	if (cflag)
+	{
+		if ((rand() % 5) == 1)
+		{
+			a[0] = state;
+			a[1] = 1;//¿ªÅÚ
+			return a;
+		}
+		a[0] = rand() % 4;
+		a[1] = 0;
+		return a;
+	}
+	if ((rand() % 100) == 1)
+	{
+		a[0] = state;
+		a[1] = 1;
+		return a;
+	}
+	if ((rand() % 60) == 13)
+	{
+		a[0] = rand() % 4;
+		a[1] = 0;
+		return a;
+	}
+
+	a[0] = state;
+	a[1] = 0;
+	return a;
+
+}
 //µĞÈËµÄ¹¹Ôìº¯Êı
-Enemy::Enemy(int x, int y, int speed, int hp, int as,int grade,int dir,int xy)
+Enemy::Enemy(int x, int y, int speed, int hp, int as,int grade,int dir)
 {
 	player.x = x;
 	player.y = y;
@@ -65,7 +113,6 @@ Enemy::Enemy(int x, int y, int speed, int hp, int as,int grade,int dir,int xy)
 	Attack_Speed = as;
 	Grade = grade;
 	Dir = dir;
-	XY = xy;
 	Time = 0;
 }
 //µĞÈËµÄäÖÈ¾·½·¨
@@ -104,7 +151,12 @@ bool Enemy::Draw()
 //µĞÈËÂß¼­
 bool Enemy::Logic(bool st)
 {
-	int d=Dir;
+	int *a=idiot(Dir, CrashingFlag);
+	CrashingFlag = false;
+	int d = *a;
+	if (*(a + 1) == 1)
+		Shoot(2);
+	/**
 	if (st)
 		Time++;
 	if (Time == 6)
@@ -113,30 +165,31 @@ bool Enemy::Logic(bool st)
 		Time = 0;
 		Shoot(2);
 	}
-
+	*/
+	unsigned long srtime = GetTickCount() - lasttime;
 	switch (d)
 	{
 	case Dirction::up:
 		Dir = Dirction::up;
-		player.y -= Speed;
+		player.y -= Speed*srtime / 1000;
 		if (player.y < 64)
 			player.y = 64;
 		break;
 	case Dirction::right:
 		Dir = Dirction::right;
-		player.x += Speed;
+		player.x += Speed*srtime / 1000;
 		if (player.x > 840)
 			player.x = 840;
 		break;
 	case Dirction::below:
 		Dir = Dirction::below;
-		player.y += Speed;
+		player.y += Speed*srtime / 1000;
 		if (player.y > 840)
 			player.y = 840;
 		break;
 	case Dirction::lift:
 		Dir = Dirction::lift;
-		player.x -= Speed;
+		player.x -= Speed*srtime / 1000;
 		if (player.x < 64)
 			player.x = 64;
 		break;
@@ -144,7 +197,7 @@ bool Enemy::Logic(bool st)
 		break;
 	}
 	RECT PlayerRect = { player.x,player.y,player.x + 56,player.y + 56 };
-	RECT EnemyRect, Rect;
+	RECT Rect;
 	//ºÍµØÍ¼¿éµÄÅö×²¼ì²â
 	{
 		int X1, Y1, X2, Y2;
@@ -177,129 +230,104 @@ bool Enemy::Logic(bool st)
 		default:
 			break;
 		}
-		RECT MapRect1, MapRect2, MapRect3, MapRect4;
-		bool Result1, Result2, Result3, Result4;
+		MapPieceList*mp = mappiecelisthead.next;
+		int result1 = 0, result2 = 0;
 		if (X1 == X2&&Y1 == Y2)
 		{
-			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
-			if (MapRect1.bottom != -1 || MapRect2.bottom != -1)
+			while (mp != NULL)
 			{
-				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
-				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
-				if (Result1 || Result2)
-				{
-					if (Result1&&Result2)
-					{
-						switch (d)
-						{
-						case Dirction::up:
-							if (MapRect1.bottom > MapRect2.bottom)
-								player.y = MapRect1.bottom;
-							else
-								player.y = MapRect2.bottom;
-							break;
-						case Dirction::right:
-							if (MapRect1.left < MapRect2.left || MapRect2.left == -1)
-								player.x = MapRect1.left - 56;
-							else
-								player.x = MapRect2.left - 56;
-							break;
-						case Dirction::below:
-							if (MapRect1.top < MapRect2.top || MapRect2.top == -1)
-								player.y = MapRect1.top - 56;
-							else
-								player.y = MapRect2.top - 56;
-							break;
-						case Dirction::lift:
-							if (MapRect1.right > MapRect2.right)
-								player.x = MapRect1.right;
-							else
-								player.x = MapRect2.right;
-							break;
-						default:
-							break;
-						}
-					}
-					else if (Result1 && !Result2)
-					{
-						switch (d)
-						{
-						case Dirction::up:
-							player.y = MapRect1.bottom;
-							break;
-						case Dirction::right:
-							player.x = MapRect1.left - 56;
-							break;
-						case Dirction::below:
-							player.y = MapRect1.top - 56;
-							break;
-						case Dirction::lift:
-							player.x = MapRect1.right;
-							break;
-						default:
-							break;
-						}
-					}
-					else if (!Result1&&Result2)
-					{
-						switch (d)
-						{
-						case Dirction::up:
-							player.y = MapRect2.bottom;
-							break;
-						case Dirction::right:
-							player.x = MapRect2.left - 56;
-							break;
-						case Dirction::below:
-							player.y = MapRect2.top - 56;
-							break;
-						case Dirction::lift:
-							player.x = MapRect2.right;
-							break;
-						default:
-							break;
-						}
-					}
-				}
+				if (X1 - 1 == mp->mappiece->X)
+					if (Y1 - 1 == mp->mappiece->Y)
+						result1 = mp->mappiece->PECrach(d, PlayerRect);
+				mp = mp->next;
 			}
 		}
 		else
 		{
-			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
-			ReadMap(X2 - 1, Y2 - 1, MapRect3, MapRect4);
-			if (MapRect1.bottom != -1 || MapRect2.bottom != -1 ||
-				MapRect3.bottom != -1 || MapRect4.bottom != -1)
+			while (mp != NULL)
 			{
-				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
-				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
-				Result3 = IntersectRect(&Rect, &MapRect3, &PlayerRect);
-				Result4 = IntersectRect(&Rect, &MapRect4, &PlayerRect);
-
-				if (Result1 || Result2 || Result3 || Result4)
-				{
-					switch (d)
-					{
-					case Dirction::up:
-						player.y = MaxNumber(MapRect1.bottom, MapRect2.bottom, MapRect3.bottom,
-							MapRect4.bottom, Result1, Result2, Result3, Result4);
-						break;
-					case Dirction::right:
-						player.x = MinNumber(MapRect1.left, MapRect2.left, MapRect3.left, MapRect4.left,
-							Result1, Result2, Result3, Result4) - 56;
-						break;
-					case Dirction::below:
-						player.y = MinNumber(MapRect1.top, MapRect2.top, MapRect3.top, MapRect4.top,
-							Result1, Result2, Result3, Result4) - 56;
-						break;
-					case Dirction::lift:
-						player.x = MaxNumber(MapRect1.right, MapRect2.right, MapRect3.right,
-							MapRect4.right, Result1, Result2, Result3, Result4);
-						break;
-					default:
-						break;
-					}
-				}
+				if (X1 - 1 == mp->mappiece->X)
+					if (Y1 - 1 == mp->mappiece->Y)
+						result1 = mp->mappiece->PECrach(d, PlayerRect);
+				mp = mp->next;
 			}
+			mp = mappiecelisthead.next;
+			while (mp != NULL)
+			{
+				if (X2 - 1 == mp->mappiece->X)
+					if (Y2 - 1 == mp->mappiece->Y)
+						result2 = mp->mappiece->PECrach(d, PlayerRect);
+				mp = mp->next;
+			}
+
+		}
+		if (result1 != 0 || result2 != 0)
+		{
+			CrashingFlag = true;
+			switch (d)
+			{
+			case Dirction::up:
+				if (result1 > result2)
+					player.y = result1;
+				else
+					player.y = result2;
+				break;
+			case Dirction::right:
+				if (result2 == 0)
+					player.x = result1 - 56;
+				else if (result1 == 0)
+					player.x = result2 - 56;
+				else if (result1<result2)
+					player.x = result1 - 56;
+				else
+					player.x = result2 - 56;
+				break;
+			case Dirction::below:
+				if (result2 == 0)
+					player.y = result1 - 56;
+				else if (result1 == 0)
+					player.y = result2 - 56;
+				else if (result1<result2)
+					player.y = result1 - 56;
+				else
+					player.y = result2 - 56;
+				break;
+			case Dirction::lift:
+				if (result1 > result2)
+					player.x = result1;
+				else
+					player.x = result2;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	RECT EnemyRect;
+	EnemyRect.bottom=Player1.player.y+56;
+	EnemyRect.right = Player1.player.x + 56;
+	EnemyRect.left = Player1.player.x;
+	EnemyRect.top = Player1.player.y;
+	if (IntersectRect(&Rect, &EnemyRect, &PlayerRect))
+	{
+		CrashingFlag = true;
+		switch (d)
+		{
+		case Dirction::up:
+			player.y = Player1.player.y + 56;
+			break;
+		case Dirction::right:
+			player.x = Player1.player.x - 56;
+			break;
+		case Dirction::below:
+			player.y = Player1.player.y - 56;
+			break;
+		case Dirction::lift:
+			player.x = Player1.player.x + 56;
+			break;
+		default:
+			break;
 		}
 	}
 	return false;
@@ -309,19 +337,20 @@ bool Enemy::Logic(bool st)
 Player::Player()
 {
 	Health_Point = 1;//Íæ¼ÒÑªÁ¿
-	Speed = 5;
-	Attack_Speed = 10;
+	Speed = 5*64;
+	Attack_Speed = 5;
 	Dir = Dirction::up;
-	Grade = 0;
+	Grade = 3;
 	player.scaling = 2;
-	player.columns = 8;
+	player.columns = 8; 
 	player.frame = 0;
 	player.color= D3DCOLOR_XRGB(255, 255, 255);
 	player.x = 64*6;
 	player.y = 64*13;
 	player.width = 28;
 	player.height = 28;
-	BulletSpeed = 10;
+	BulletSpeed = 64*12;
+	FlickerFrame = 0;
 }
 //Íæ¼ÒÉä»÷
 bool Player::Shoot(int shooter) {
@@ -362,7 +391,28 @@ bool Player::Shoot(int shooter) {
 //Íæ¼ÒäÖÈ¾·½·¨
 bool Player::Draw()
 {
-
+	static int lasttime=GetTickCount();
+	static bool ChangeFrame = false;
+	if (ChangeFrame) {
+		Sprite_Transform_Draw(Player_1, player.x, player.y, player.width, player.height,
+			Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
+			ChangeFrame = !ChangeFrame;
+	}
+	else {
+		Sprite_Transform_Draw(Player_1, player.x, player.y, player.width, player.height,
+			Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
+			ChangeFrame = !ChangeFrame;
+	}
+	if (GetTickCount() > lasttime + 50)
+	{
+		FlickerFrame++;
+		lasttime = GetTickCount();
+		if (FlickerFrame > 8)
+			FlickerFrame = 0;
+	}
+	Sprite_Draw_Frame(Flicker[FlickerFrame], player.x - 372, player.y - 272, 0, 800, 600, 1);
 	return false;
 }
 //Ö»ÎªPlayer£º£ºLogic·şÎñµÄº¯Êı 
@@ -421,29 +471,30 @@ int MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4
 //Íæ¼ÒÂß¼­·½·¨
 bool Player::Logic(int d)
 {
+	unsigned long srtime = GetTickCount() - lasttime;
 	switch (d)
 	{
 	case Dirction::up:
 		Dir = Dirction::up;
-		player.y -=Speed;
+		player.y -= Speed*srtime / 1000;
 		if (player.y < 64)
 			player.y = 64;
 		break;
 	case Dirction::right:
 		Dir = Dirction::right;
-		player.x += Speed;
+		player.x += Speed*srtime / 1000;
 		if (player.x > 840)
 			player.x = 840;
 		break;
 	case Dirction::below:
 		Dir = Dirction::below;
-		player.y += Speed;
+		player.y += Speed*srtime / 1000;
 		if (player.y > 840)
 			player.y = 840;
 		break;
 	case Dirction::lift:
 		Dir = Dirction::lift;
-		player.x -= Speed;
+		player.x -= Speed*srtime / 1000;
 		if (player.x < 64)
 			player.x = 64;
 		break;
@@ -484,132 +535,206 @@ bool Player::Logic(int d)
 		default:
 			break;
 		}
-		RECT MapRect1, MapRect2, MapRect3, MapRect4;
-		bool Result1, Result2, Result3, Result4;
+		MapPieceList*mp = mappiecelisthead.next;
+		int result1 = 0, result2 = 0;
 		if (X1 == X2&&Y1 == Y2)
 		{
-			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
-			if (MapRect1.bottom != -1 || MapRect2.bottom != -1)
+			while (mp != NULL)
 			{
-				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
-				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
-				if (Result1 || Result2)
-				{
-					if (Result1&&Result2)
-					{
-						switch (d)
-						{
-						case Dirction::up:
-							if (MapRect1.bottom > MapRect2.bottom)
-								player.y = MapRect1.bottom;
-							else
-								player.y = MapRect2.bottom;
-							break;
-						case Dirction::right:
-							if (MapRect1.left < MapRect2.left || MapRect2.left == -1)
-								player.x = MapRect1.left - 56;
-							else
-								player.x = MapRect2.left - 56;
-							break;
-						case Dirction::below:
-							if (MapRect1.top < MapRect2.top || MapRect2.top == -1)
-								player.y = MapRect1.top - 56;
-							else
-								player.y = MapRect2.top - 56;
-							break;
-						case Dirction::lift:
-							if (MapRect1.right > MapRect2.right)
-								player.x = MapRect1.right;
-							else
-								player.x = MapRect2.right;
-							break;
-						default:
-							break;
-						}
-					}
-					else if (Result1 && !Result2)
-					{
-						switch (d)
-						{
-						case Dirction::up:
-							player.y = MapRect1.bottom;
-							break;
-						case Dirction::right:
-							player.x = MapRect1.left - 56;
-							break;
-						case Dirction::below:
-							player.y = MapRect1.top - 56;
-							break;
-						case Dirction::lift:
-							player.x = MapRect1.right;
-							break;
-						default:
-							break;
-						}
-					}
-					else if (!Result1&&Result2)
-					{
-						switch (d)
-						{
-						case Dirction::up:
-							player.y = MapRect2.bottom;
-							break;
-						case Dirction::right:
-							player.x = MapRect2.left - 56;
-							break;
-						case Dirction::below:
-							player.y = MapRect2.top - 56;
-							break;
-						case Dirction::lift:
-							player.x = MapRect2.right;
-							break;
-						default:
-							break;
-						}
-					}
-				}
+				if (X1 - 1 == mp->mappiece->X)
+					if (Y1 - 1 == mp->mappiece->Y)
+						result1 = mp->mappiece->PECrach(d, PlayerRect);
+				mp = mp->next;
 			}
 		}
 		else
 		{
-			ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
-			ReadMap(X2 - 1, Y2 - 1, MapRect3, MapRect4);
-			if (MapRect1.bottom != -1 || MapRect2.bottom != -1 ||
-				MapRect3.bottom != -1 || MapRect4.bottom != -1)
+			while (mp != NULL)
 			{
-				Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
-				Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
-				Result3 = IntersectRect(&Rect, &MapRect3, &PlayerRect);
-				Result4 = IntersectRect(&Rect, &MapRect4, &PlayerRect);
+				if (X1 - 1 == mp->mappiece->X)
+					if (Y1 - 1 == mp->mappiece->Y)
+						result1 = mp->mappiece->PECrach(d, PlayerRect);
+				mp = mp->next;
+			}
+			mp = mappiecelisthead.next;
+			while (mp != NULL)
+			{
+				if (X2 - 1 == mp->mappiece->X)
+					if (Y2 - 1 == mp->mappiece->Y)
+						result2 = mp->mappiece->PECrach(d, PlayerRect);
+				mp = mp->next;
+			}
 
-				if (Result1||Result2||Result3||Result4)
+		}
+		if (result1 != 0 || result2 != 0)
+		{
+			switch (d)
+			{
+			case Dirction::up:
+				if (result1 > result2)
+					player.y = result1;
+				else
+					player.y = result2;
+				break;
+			case Dirction::right:
+				if (result2 == 0)
+					player.x = result1 - 56;
+				else if (result1 == 0)
+					player.x = result2 - 56;
+				else if(result1<result2)
+					player.x = result1 - 56;
+				else
+					player.x = result2 - 56;
+				break;
+			case Dirction::below:
+				if (result2 == 0)
+					player.y = result1 - 56;
+				else if (result1 == 0)
+					player.y = result2 - 56;
+				else if (result1<result2)
+					player.y = result1 - 56;
+				else
+					player.y = result2 - 56;
+				break;
+			case Dirction::lift:
+				if (result1 > result2)
+					player.x = result1;
+				else
+					player.x = result2;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	/*
+			RECT MapRect1, MapRect2, MapRect3, MapRect4;
+			bool Result1, Result2, Result3, Result4;
+			if (X1 == X2&&Y1 == Y2)
+			{
+				ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
+				if (MapRect1.bottom != -1 || MapRect2.bottom != -1)
 				{
-					switch (d)
+					Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
+					Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
+					if (Result1 || Result2)
 					{
-					case Dirction::up:
-						player.y=MaxNumber(MapRect1.bottom, MapRect2.bottom, MapRect3.bottom,
-				MapRect4.bottom, Result1, Result2, Result3, Result4);
-						break;
-					case Dirction::right:
-						player.x = MinNumber(MapRect1.left, MapRect2.left, MapRect3.left, MapRect4.left,
-							Result1, Result2, Result3, Result4)-56;
-						break;
-					case Dirction::below:
-						player.y = MinNumber(MapRect1.top, MapRect2.top, MapRect3.top, MapRect4.top,
-							Result1, Result2, Result3, Result4)-56;
-						break;
-					case Dirction::lift:
-						player.x = MaxNumber(MapRect1.right, MapRect2.right , MapRect3.right,
-								MapRect4.right, Result1, Result2, Result3, Result4);
-						break;
-					default:
-						break;
+						if (Result1&&Result2)
+						{
+							switch (d)
+							{
+							case Dirction::up:
+								if (MapRect1.bottom > MapRect2.bottom)
+									player.y = MapRect1.bottom;
+								else
+									player.y = MapRect2.bottom;
+								break;
+							case Dirction::right:
+								if (MapRect1.left < MapRect2.left || MapRect2.left == -1)
+									player.x = MapRect1.left - 56;
+								else
+									player.x = MapRect2.left - 56;
+								break;
+							case Dirction::below:
+								if (MapRect1.top < MapRect2.top || MapRect2.top == -1)
+									player.y = MapRect1.top - 56;
+								else
+									player.y = MapRect2.top - 56;
+								break;
+							case Dirction::lift:
+								if (MapRect1.right > MapRect2.right)
+									player.x = MapRect1.right;
+								else
+									player.x = MapRect2.right;
+								break;
+							default:
+								break;
+							}
+						}
+						else if (Result1 && !Result2)
+						{
+							switch (d)
+							{
+							case Dirction::up:
+								player.y = MapRect1.bottom;
+								break;
+							case Dirction::right:
+								player.x = MapRect1.left - 56;
+								break;
+							case Dirction::below:
+								player.y = MapRect1.top - 56;
+								break;
+							case Dirction::lift:
+								player.x = MapRect1.right;
+								break;
+							default:
+								break;
+							}
+						}
+						else if (!Result1&&Result2)
+						{
+							switch (d)
+							{
+							case Dirction::up:
+								player.y = MapRect2.bottom;
+								break;
+							case Dirction::right:
+								player.x = MapRect2.left - 56;
+								break;
+							case Dirction::below:
+								player.y = MapRect2.top - 56;
+								break;
+							case Dirction::lift:
+								player.x = MapRect2.right;
+								break;
+							default:
+								break;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				ReadMap(X1 - 1, Y1 - 1, MapRect1, MapRect2);
+				ReadMap(X2 - 1, Y2 - 1, MapRect3, MapRect4);
+				if (MapRect1.bottom != -1 || MapRect2.bottom != -1 ||
+					MapRect3.bottom != -1 || MapRect4.bottom != -1)
+				{
+					Result1 = IntersectRect(&Rect, &MapRect1, &PlayerRect);
+					Result2 = IntersectRect(&Rect, &MapRect2, &PlayerRect);
+					Result3 = IntersectRect(&Rect, &MapRect3, &PlayerRect);
+					Result4 = IntersectRect(&Rect, &MapRect4, &PlayerRect);
+
+					if (Result1||Result2||Result3||Result4)
+					{
+						switch (d)
+						{
+						case Dirction::up:
+							player.y=MaxNumber(MapRect1.bottom, MapRect2.bottom, MapRect3.bottom,
+					MapRect4.bottom, Result1, Result2, Result3, Result4);
+							break;
+						case Dirction::right:
+							player.x = MinNumber(MapRect1.left, MapRect2.left, MapRect3.left, MapRect4.left,
+								Result1, Result2, Result3, Result4)-56;
+							break;
+						case Dirction::below:
+							player.y = MinNumber(MapRect1.top, MapRect2.top, MapRect3.top, MapRect4.top,
+								Result1, Result2, Result3, Result4)-56;
+							break;
+						case Dirction::lift:
+							player.x = MaxNumber(MapRect1.right, MapRect2.right , MapRect3.right,
+									MapRect4.right, Result1, Result2, Result3, Result4);
+							break;
+						default:
+							break;
+						}
 					}
 				}
 			}
 		}
-	}
-	//ºÍµĞÈËµÄÅö×²¼ì²â
+		*/
+    //ºÍµĞÈËµÄÅö×²¼ì²â
 	EnemyList* ep = enemylisthead.next;
 	while (ep != NULL)
 	{
@@ -640,14 +765,16 @@ bool Player::Logic(int d)
 		}
 		ep = ep->next;
 	}
-
 	return false;
 }
 
 bool Player::GetHurt(int power)
 {
-
-	return false;
+	Health_Point--;
+	if (Health_Point == 0)
+		return false;
+	else
+		true;
 }
 
 //×Óµ¯¶ÔÏó¹¹Ôìº¯Êı
@@ -661,18 +788,18 @@ Bullet::Bullet(int shooter,int x, int y, int S, int D) :Speed(S), Dir(D),Shooter
 	{
 	case Dirction::up:
 		bullet.x = x + 20;
-		bullet.y = y - 8;
+		bullet.y = y;
 		break;
 	case Dirction::below:
 		bullet.x = x+20;
-		bullet.y = y+56;
+		bullet.y = y+40;
 		break;
 	case Dirction::lift:
-		bullet.x = x-8;
+		bullet.x = x;
 		bullet.y = y+20;
 		break;
 	case Dirction::right:
-		bullet.x = x + 56;
+		bullet.x = x + 40;
 		bullet.y = y + 20;
 		break;
 	default:
@@ -683,7 +810,27 @@ Bullet::Bullet(int shooter,int x, int y, int S, int D) :Speed(S), Dir(D),Shooter
 bool Bullet::Logic()
 {
 	//Åö×²¼ì²â
-	int result = Crash( 0,bullet.x, bullet.y, Speed, Dir, Power,Shooter);
+	unsigned long srtime = GetTickCount() - lasttime;
+	MovedPixel = Speed*srtime / 1000;
+	switch (Dir)
+	{
+	case Dirction::up:
+		bullet.y = bullet.y- MovedPixel;
+		break;
+	case Dirction::below:
+		bullet.y = bullet.y + MovedPixel;
+		break;
+	case Dirction::lift:
+		bullet.x = bullet.x- MovedPixel;
+		break;
+	case Dirction::right:
+		bullet.x = bullet.x+ MovedPixel;
+		break;
+	default:
+		break;
+	}
+
+    int result = Crash( 0,bullet.x, bullet.y, Speed, Dir, Power,Shooter,ID, MovedPixel);
 	if (result == 1)
 	{
 		AddUselessObj(ID);//¼ÇÂ¼¶ÔÏóIDÓÃÓÚÏú»Ù
@@ -695,23 +842,7 @@ bool Bullet::Logic()
 	//×Óµ¯Âß¼­ÒÆ¶¯
 	if (result == 1 || result == 2)
 		return true;
-	switch (Dir)
-	{
-	case Dirction::up:
-		bullet.y -= Speed;
-		break;
-	case Dirction::below:
-		bullet.y += Speed;
-		break;
-	case Dirction::lift:
-		bullet.x -= Speed;
-		break;
-	case Dirction::right:
-		bullet.x += Speed;
-		break;
-	default:
-		break;
-	}
+
 	return false;
 }
 //×Óµ¯äÖÈ¾·½·¨
@@ -753,14 +884,44 @@ int PCrash()
 
 	return 1 ;
 }
-int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter) {
+int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter,unsigned long id,int movedmixel) {
 	//µØÍ¼±ß½ç
 	static  RECT MapEdgeTop = { 0,0,1024,64 },
 		         MapEdgeBelow = { 0,896,1024,960 },
 		         MapEdgeLeft = { 0,0,64,960 },
 				 MapEdgeRight = { 896,0,1024,960 };
 	//ÏÈ¼ì²â×Óµ¯ÊÇ·ñÅö×²µ½µĞÈË
-	RECT BulletRect = { x,y,x + 16,y + 16 };
+	RECT BulletRect;
+	switch (dir)
+	{
+	case Dirction::up:
+		BulletRect.bottom = y + 16 + movedmixel;
+		BulletRect.left = x;
+		BulletRect.right = x + 16;
+		BulletRect.top = y;
+		break;
+	case Dirction::right:
+		BulletRect.bottom = y + 16;
+		BulletRect.left = x- movedmixel;
+		BulletRect.right = x + 16 ;
+		BulletRect.top = y;
+		break;
+	case Dirction::below:
+		BulletRect.bottom = y + 16;
+		BulletRect.left =x;
+		BulletRect.right = x + 16;
+		BulletRect.top = y- movedmixel;
+		break;
+	case Dirction::lift:
+		BulletRect.bottom = y + 16;
+		BulletRect.left = x;
+		BulletRect.right = x+16+ movedmixel;
+		BulletRect.top = y;
+		break;
+	default:
+		break;
+	}
+
 	RECT EnemyRect,Rect;
 	EnemyList* ep = enemylisthead.next;
 	if (shooter == 0)
@@ -773,11 +934,49 @@ int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter) {
 			EnemyRect.right = ep->enemy->player.x + 56;
 			if (IntersectRect(&Rect, &EnemyRect, &BulletRect))
 			{
-				AddUselessObj(ep->enemy->ID);
-				return 2;
+				CreateBoom(ep->enemy->player.x, ep->enemy->player.y, 2, ep->enemy->Dir);
+				DelListNode(enemylisthead.next, ep->enemy->ID);
+				return 2;//Ïú»Ù×Ô¼º
 			}
 			ep = ep->next;
 		}
+	}
+	//¼ì²âµĞÈË×Óµ¯ÊÇ·ñÃüÖĞÍæ¼Ò
+	RECT PlayerRect;
+	if (shooter == 2)
+	{
+		PlayerRect.bottom = Player1.player.y + 56;
+		PlayerRect.right = Player1.player.x + 56;
+		PlayerRect.left = Player1.player.x;
+		PlayerRect.top = Player1.player.y;
+		if (IntersectRect(&Rect, &PlayerRect, &BulletRect))
+		{
+			if (!Player1.GetHurt(0))
+			{
+				GameOverFlag = true;
+				Sound::PlayerBoom->Play();
+			}
+			return 1;
+		}
+	}
+	//¼ì²â×Óµ¯Åö×²
+	BulletList*bp	= bulletlisthead.next;	
+	RECT BulletRectTest;
+	while (bp!=NULL)
+	{
+		BulletRectTest.bottom = bp->bullet->bullet.y+16;
+		BulletRectTest.right = bp->bullet->bullet.x + 16;
+		BulletRectTest.top = bp->bullet->bullet.y ;
+		BulletRectTest.left = bp->bullet->bullet.x;
+		if (IntersectRect(&Rect, &BulletRectTest, &BulletRect))
+		{
+			if (id != bp->bullet->ID)
+			{
+				AddUselessObj(bp->bullet->ID);
+				return 1;
+			}
+		}
+		bp = bp->next;
 	}
 	/*
 	for (int i = 0; i < EnemyNumberMAX; i++)
@@ -804,74 +1003,94 @@ int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter) {
 		}
 	}*/
 	//¼ì²âÊÇ·ñÅö×²µ½×©¿é
-	int X = x / 64;
-	int Y = y / 64;
-	switch (Map[Y-1][X-1])
+//	int x1 = x - 20, y1 = y - 20;
+	int X1, Y1, X2, Y2;
+	switch (dir)
 	{
-	case 0:
+	case Dirction::up:
+		X1 =  (x-20) / 64;
+		Y1 =  y / 64;
+		X2 = ( x + 36) / 64;
+		Y2 = y/64;
 		break;
-	case 1:
-
+	case Dirction::right:
+		X1 = ( x + 16) / 64;
+		Y1 =  (y-20) / 64;
+		X2 = ( x + 16) / 64;
+		Y2 = ( y + 36) / 64;
 		break;
-	case 2:
+	case Dirction::below:
+		X1 = ( x - 20) / 64;
+		Y1 = ( y + 16) / 64;
+		X2 = ( x + 36) / 64;
+		Y2 = (y + 16) / 64;
 		break;
-	case 3:
-		break;
-	case 4:
-		break;
-	case 5:
-		break;
-	case 6:
-		break;
-	case 7:
-		break;
-	case 8:
-		break;
-	case 9:
-		break;
-	case 10:
-		break;
-	case 11:
-		break;
-	case 12:
-		break;
-	case 13:
-		break;
-	case 14:
-		break;
-	case 15:
-		break;
-	case 16:
-		break;
-	case 17:
-		break;
-	case 18:
-		break;
-	case 19:
-		break;
-	case 20:
-		break;
-	case 21:
-		break;
-	case 22:
-		break;
-	case 23:
-		break;
-	case 24:
-		break;
-	case 25:
-		break;
-	case 26:
-		break;
-	case 27:
-		break;
-	case 28:
-		break;
-	case 29:
+	case Dirction::lift:
+		X1 =  x / 64;
+		Y1 = ( y - 20) / 64;
+		X2 =  x / 64;
+		Y2 = (y +36) / 64;
 		break;
 	default:
 		break;
 	}
+	//RECT BoomRect = { x - 20,y - 20,x + 36,y + 36 };
+	MapPieceList*mp = mappiecelisthead.next;
+	bool crashflag1=false, crashflag2=false;
+	if (X1 == X2&&Y1 == Y2)
+	{
+		while (mp != NULL)
+		{
+			if (X1 - 1 == mp->mappiece->X)
+				if (Y1 - 1 == mp->mappiece->Y)
+					crashflag1 = mp->mappiece->BeingCrash(0,BulletRect,dir,x,y);
+			mp = mp->next;
+		}
+	}
+	else
+	{
+		while (mp != NULL)
+		{
+			if (X1 - 1 == mp->mappiece->X)
+				if (Y1 - 1 == mp->mappiece->Y)
+					crashflag1 = mp->mappiece->BeingCrash(0, BulletRect, dir, x, y);
+			mp = mp->next;
+		}
+		mp = mappiecelisthead.next;
+		while (mp != NULL)
+		{
+			if (X2 - 1 == mp->mappiece->X)
+				if (Y2 - 1 == mp->mappiece->Y)
+					crashflag2 = mp->mappiece->BeingCrash(crashflag1, BulletRect, dir, x, y);
+			mp = mp->next;
+		}
+	}
+	if (!crashflag1)
+	{
+		mp = mappiecelisthead.next;
+		while (mp != NULL)
+		{
+			if (X1 - 1 == mp->mappiece->X)
+				if (Y1 - 1 == mp->mappiece->Y)
+					crashflag1 = mp->mappiece->BeingCrash(crashflag2, BulletRect, dir, x, y);
+			mp = mp->next;
+		}
+
+	}
+	else if (!crashflag2)
+	{
+		mp = mappiecelisthead.next;
+		while (mp != NULL)
+		{
+			if (X2 - 1 == mp->mappiece->X)
+				if (Y2 - 1 == mp->mappiece->Y)
+					crashflag2 = mp->mappiece->BeingCrash(crashflag1, BulletRect, dir, x, y);
+			mp = mp->next;
+		}
+
+	}
+	if (crashflag1 || crashflag2)
+		return 1;
 	for (int  i = 0; i < 4; i++)
 	{
 		switch (i)
@@ -996,6 +1215,154 @@ for (int i = 0; i<13; i++)
 }
 }
 /*´´½¨¶ÔÏó*/
+//´´½¨µØÍ¼¾«Áé
+void CreateMapPiece()
+{
+	for (int x = 0;x < 13; x++)
+		for (int y = 0; y < 13; y++) {
+			//switch (Map[j][i])
+			if (Map[y][x] != 0) {
+				MapPiece*b = new MapPiece;
+				MapPieceList*h = mappiecelisthead.next;
+				MapPieceList*New = new MapPieceList;
+				New->mappiece = b;
+				b->X = x;
+				b->Y = y;
+				b->Create(Map[y][x]);
+				if (h == NULL)
+				{
+					mappiecelisthead.next = New;
+					New->last = NULL;
+					New->next = NULL;
+				}
+				else
+				{
+					if (h->next != NULL)
+					{
+						New->next = h->next;
+						h->next = New;
+						New->next->last = New;
+						New->last = h;
+					}
+					else
+					{
+						h->next = New;
+						New->last = h;
+						New->next = NULL;
+					}
+				}
+			}
+		}
+}
+//¶ÁÈ¡Ó²ÅÌÉÏµØÍ¼µÄĞÅÏ¢
+bool ReadMapInHD(char*filename)
+{
+	char buf[13][13];
+	ifstream in(filename, ios::in | ios::binary);
+	if (!in.is_open())
+	{
+		ShowMessage(filename);
+	}
+	//´ÓÎÄ¼şÖĞ¶ÁÈ¡µØÍ¼ĞÅÏ¢
+	for (int i = 0; i < 13; i++)
+		for (int j = 0; j < 13; j++)
+		{
+			in.read(&buf[i][j], 1);
+		}
+	//×ª»»Îªµ±Ç°µØÍ¼
+	for (int i = 0; i < 13; i++)
+		for (int j = 0; j < 13; j++)
+		{
+			Map[i][j]=buf[i][j];
+		}
+
+	return 0;
+}
+//Ğ´µ±Ç°µØÍ¼ĞÅÏ¢µ½Ó²ÅÌ
+bool WriteMapToHD(char*filename)
+{
+	char buf;
+	ofstream out(filename, ios::out | ios::binary);
+	if (!out.is_open())
+	{
+		ShowMessage(filename);
+	}
+	for (int i = 0; i < 13; i++)
+		for (int j = 0; j < 13; j++)
+		{
+			buf = Map[i][j];
+			out.write(&buf, 1);
+		}
+	return 0;
+}
+MapPiece::MapPiece()
+{
+	rectlisthead = new RectListHead;
+	rectlisthead->next = NULL;
+}
+void MapPiece::Draw()
+{
+	RectList*rp = rectlisthead->next;
+	while (rp != NULL)
+	{
+		if(rp->rect->left<32)
+		Sprite_Transform_Draw(Tile, (X+1)*64+rp->rect->left*2, (Y + 1) * 64+rp->rect->top*2,
+			rp->rect, 0, 1, 0, 2, 2,D3DCOLOR_XRGB(255, 255, 255));
+		else if(rp->rect->left<64)
+		Sprite_Transform_Draw(Tile, (X+1)*64+(rp->rect->left-32)*2, (Y + 1) * 64+rp->rect->top*2,
+			rp->rect, 0, 1, 0, 2, 2,D3DCOLOR_XRGB(255, 255, 255));
+		else if(rp->rect->left<96)
+			Sprite_Transform_Draw(Tile, X * 64 + rp->rect->left*2-64, (Y + 1) * 64 + rp->rect->top,
+				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
+		else if (rp->rect->left<128)
+			Sprite_Transform_Draw(Tile, (X + 1) * 64 + (rp->rect->left-96)*2, (Y + 1) * 64 + rp->rect->top*2,
+				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
+		else if (rp->rect->left<160)
+			Sprite_Transform_Draw(Tile, (X + 1) * 64 + (rp->rect->left-128)*2, (Y + 1) * 64 + rp->rect->top*2,
+				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
+		else if (rp->rect->left<192)
+			Sprite_Transform_Draw(Tile, (X + 1) * 64 + (rp->rect->left-160)*2, (Y + 1) * 64 + rp->rect->top*2,
+				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
+		else
+			Sprite_Transform_Draw(Tile, (X + 1) * 64 +( rp->rect->left-192)*2, (Y + 1) * 64 + rp->rect->top*2,
+				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
+		rp = rp->next;
+	}
+}
+//´´½¨µØÍ¼·½¿ò
+void MapPiece::CreateMapRect(int x, int y, int wight, int hight)
+{
+	RECT *b = new RECT;
+	b->left = x;
+	b->top = y;
+	b->right = x + wight;
+	b->bottom = y + hight;
+	RectList*New = new RectList;
+	New->rect = b;
+	if (rectlisthead->next == NULL)
+	{
+		rectlisthead->next = New;
+		New->last = NULL;
+		New->next = NULL;
+	}
+	else
+	{
+		if (rectlisthead->next->next != NULL)
+		{
+			New->next = rectlisthead->next->next;
+			rectlisthead->next->next = New;
+			New->next->last = New;
+			New->last = rectlisthead->next;
+		}
+		else
+		{
+			rectlisthead->next->next = New;
+			New->last = rectlisthead->next;
+			New->next = NULL;
+		}
+	}
+
+}
 //´´½¨±¬Õ¨
 void CreateBoom(int x,int y,int whatboom,int Dir)
 {
@@ -1034,19 +1401,9 @@ void CreateEnemy(int x,int y,int speed,int hp,int as,int grade,int dir)
 {
 	int NewEnemyX = x;
 	int NewEnemyY = y;
-	int EnemyI = 0;
-	//¸üĞÂµĞÈË×ø±ê±í
-	for (int i = 0; i < 20; i++)
-	{
-		if (EnemyXY[i][0] == -1) {
-			EnemyXY[i][0] = NewEnemyX;
-			EnemyXY[i][1] = NewEnemyY;
-			EnemyI = i;
-			break;
-		}
-	}
+
 	//Éú³ÉµĞÈË¶ÔÏó
-	Enemy*e = new Enemy(NewEnemyX, NewEnemyY, speed, hp, as, grade, dir, EnemyI);
+	Enemy*e = new Enemy(NewEnemyX, NewEnemyY, speed, hp, as, grade, dir);
 	IDNumber++;
 	e->ID = IDNumber;
 	EnemyList*h = enemylisthead.next;
@@ -1170,7 +1527,11 @@ void ReadMap(int x,int y,RECT&rect1, RECT&rect2)
 		break;
 	}
 }
+//¶ÁÈ¡µØÍ¼±íĞÅÏ¢²¢´´½¨µØÍ¼
+void BuidMap()
+{
 
+}
 //»­¸¨ÖúÍø¸ñ
 void DrawNet()
 {
@@ -1214,6 +1575,7 @@ void ClearUselessObj()
 		if(up!=NULL)
 		up = up->next;
 	}
+	/*
 	//Çå³ıÊ§Ğ§µĞÈË²¢´´Ôì±¬Õ¨
 	up = uselessobjhead.next;
 	EnemyList*ep = enemylisthead.next;
@@ -1239,6 +1601,7 @@ void ClearUselessObj()
 		if (up != NULL)
 			up = up->next;
 	}
+	*/
 	//Çå³ıÊ§Ğ§±¬Õ¨
 	up = uselessobjhead.next;
 	BoomList*bp = boomlisthead.next;
@@ -1391,8 +1754,6 @@ bool DelListNode(BoomList*listhead, unsigned long id)//É¾³ı³É¹¦·µ»Øtrue£¬·ñÔò·µ»
 }
 
 //²úÉúÊ±¼äÂö³å
-int StartTime = 0,NowTime,SurplusTime=0;
-bool ShowTime = false;
 void DIDA() {
 	NowTime = (int)GetTickCount();
 	if (NowTime > StartTime + 100)
@@ -1465,7 +1826,7 @@ bool GamingScene::Init()
 	if (!Something)
 	{
 		ShowMessage("×°ÔØ ÔÓÏî ÎÆÀíÊ§°Ü!");
-		return false;
+		return false; 
 	}
 	Tile= LoadTexture(Resource::Texture::Tile, D3DCOLOR_XRGB(4, 4, 4));
 	if (!Tile)
@@ -1515,7 +1876,7 @@ bool GamingScene::Init()
 		ShowMessage("×°ÔØ ¶ÜÅÆ ÎÆÀíÊ§°Ü!");
 		return false;
 	}
-	GameOver = LoadTexture(Resource::Texture::GameOver, D3DCOLOR_XRGB(234, 234, 234));
+	GameOver = LoadTexture(Resource::Texture::GameOver, D3DCOLOR_XRGB(0, 0, 0));
 	if (!GameOver)
 	{
 		ShowMessage("×°ÔØ ÓÎÏ·½áÊø ÎÆÀíÊ§°Ü!");
@@ -1527,29 +1888,48 @@ bool GamingScene::Init()
 		ShowMessage("×°ÔØ µĞÈË ÎÆÀíÊ§°Ü!");
 		return false;
 	}
+	//×°ÔØÉÁ¹â
+	string png = ".png";
+	string path = "Resources\\Texture\\";
+	string buf;
+	char buf1;
+	for (int i = 0; i < 9; i++)
+	{
+		buf1 = i + 48;
+		buf = buf1 + png;
+		Flicker[i]=LoadTexture(path+buf);
+		if (!Flicker[i])
+			ShowMessage(buf);
+	}
 	RECT rect;
 	int n = 0,i=960;//ÎŞÂÛ´°¿Ú´óĞ¡£¬ÓÎÏ··Ö±æÂÊ×ÜÊÇ²»±ä
-	int delayNew=0, delayOld=GetTickCount();
-	for (; n < Global::Window::ScreenHeight/2; n+=2,i-=2)
+	int delayOld=GetTickCount();
+	d3dDev->BeginScene();
+	for (; n < Global::Window::ScreenHeight/2; n+=8,i-=8)
 	{
-		FillRect(rect, 0, 1024, n, n + 2);
+		FillRect(rect, 0, 1024, n, n + 8);
 		d3dDev->StretchRect(GrayRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
-		FillRect(rect, 0, 1024, i - 2, i);
+		FillRect(rect, 0, 1024, i - 8, i);
 		d3dDev->StretchRect(GrayRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
 		d3dDev->EndScene();
 		d3dDev->Present(NULL, NULL, NULL, NULL);
-	/*	while (1)
+		Sleep(5);
+		/**
+		while (1)
 		{
-			if (delayNew > delayOld + 1)
+			if (GetTickCount() > delayOld + 1)
 			{
-				delayOld = delayNew;
+				delayOld = GetTickCount();
 				break;
 			}
-			delayNew = GetTickCount();
 		}
 		*/
 	}
-	Sound::Sound_Init();//³õÊ¼»¯ÉùÒô×ÊÔ´
+	//ÔÚÕâÑ¡Ôñ¹Ø¿¨
+	ReadMapInHD("Map\\test.map");
+	CreateMapPiece();
+	//³õÊ¼»¯ÉùÒô×ÊÔ´
+	Sound::Sound_Init();
 	Sound::Start->Play();
 	return 1;
 }
@@ -1587,22 +1967,17 @@ void GamingScene::Render()
 		Sprite_Transform_Draw(Something, 960, 608, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 		Sprite_Transform_Draw(Something, 928, 640, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 		//»­Íæ¼ÒÒ»
-		static bool ChangeFrame = false; 
-		if (ChangeFrame) {
-			Sprite_Transform_Draw(Player_1, player.player.x, player.player.y, player.player.width, player.player.height,
-				player.Dir * 8 + player.Grade * 2, player.player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			if (KEY_DOWN(VK_LEFT) ||KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
-				ChangeFrame = !ChangeFrame;
-		}
-		else {
-			Sprite_Transform_Draw(Player_1, player.player.x, player.player.y, player.player.width, player.player.height,
-				player.Dir * 8 + player.Grade * 2 + 1, player.player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
-				ChangeFrame = !ChangeFrame;
-		}
+		player.Draw();
+		//Player2.Draw();
 		//»­µØÍ¼
-		DrawMap();
-		Sprite_Transform_Draw(Tile, 512, 832, 32, 32, 5, 7, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		MapPieceList* mp=mappiecelisthead.next;
+		while (mp != NULL)
+		{
+			mp->mappiece->Draw();
+			mp = mp->next;
+		}
+	//	DrawMap();
+//		Sprite_Transform_Draw(Tile, 512, 832, 32, 32, 5, 7, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 		//äÖÈ¾×Óµ¯ ²¢Çå³ıÒÑÊ§Ğ§×Óµ¯
 		BulletList*bp = bulletlisthead.next;
 		while (bp != NULL)
@@ -1626,12 +2001,18 @@ void GamingScene::Render()
 			pboom->boom->Draw();
 			pboom = pboom->next;
 		}
-
+		//ÓÎÏ·½áÊø
+		if (GameOverFlag)
+		{
+			ShowGameOver();
+		}
 		DIDA();//²úÉúÊ±¼äĞÅÏ¢
 }
 //ÓÎÏ·Âß¼­¸üĞÂ
 void GamingScene::Update()
 {
+	unsigned long newtime;
+	//
 	static bool StarSoundPlaying = true;
 	if (StarSoundPlaying)
 		if (!Sound::Start->IsSoundPlaying())
@@ -1639,83 +2020,91 @@ void GamingScene::Update()
 			Sound::BGM->Play(0, DSBPLAY_LOOPING);
 			StarSoundPlaying = false;
 		}
-
-	if (KEY_DOWN(VK_UP)&&!KEY_DOWN(VK_RIGHT)&& !KEY_DOWN(VK_LEFT))
-	{			
-		player.Logic(Dirction::up);
-		//up
-	}
-	if (KEY_DOWN(VK_DOWN) && !KEY_DOWN(VK_RIGHT) && !KEY_DOWN(VK_LEFT))
-	{
-		player.Logic(Dirction::below);
-		//blow
-	}
-	if (KEY_DOWN(VK_LEFT))
-	{
-		player.Logic(Dirction::lift);
-		//left
-	}
-	if (KEY_DOWN(VK_RIGHT))
-	{
-		player.Logic(Dirction::right);
-		//right
-	}
-	//Íæ¼ÒÉä»÷
-	static int ShootTime=10;
-	if (ShowTime)
-		ShootTime++;
-	if (KEY_DOWN(0x58))
-	{
-
-		if (ShootTime > 10 / player.Attack_Speed)
+	if (!GameOverFlag) {
+		if (KEY_DOWN(VK_UP) && !KEY_DOWN(VK_RIGHT) && !KEY_DOWN(VK_LEFT))
 		{
-			player.Shoot(0);
-			ShootTime = 0;
+			player.Logic(Dirction::up);
+			//up
 		}
-		
+		if (KEY_DOWN(VK_DOWN) && !KEY_DOWN(VK_RIGHT) && !KEY_DOWN(VK_LEFT))
+		{
+			player.Logic(Dirction::below);
+			//blow
+		}
+		if (KEY_DOWN(VK_LEFT))
+		{
+			player.Logic(Dirction::lift);
+			//left
+		}
+		if (KEY_DOWN(VK_RIGHT))
+		{
+			player.Logic(Dirction::right);
+			//right
+		}
+
+		//Íæ¼ÒÉä»÷
+		static int ShootTime = 10;
+		if (ShowTime)
+			ShootTime++;
+		if (KEY_DOWN(0x58))
+		{
+
+			if (ShootTime > 10 / player.Attack_Speed)
+			{
+				player.Shoot(0);
+				ShootTime = 0;
+			}
+
+		}
+		//¸üĞÂ×Óµ¯Âß¼­
+		BulletList*bp = bulletlisthead.next;
+		while (bp != NULL)
+		{
+			bp->bullet->Logic();
+			bp = bp->next;
+		}
+		//¸üĞÂµĞÈËÂß¼­
+		EnemyList*ep = enemylisthead.next;
+		while (ep != NULL)
+		{
+			ep->enemy->Logic(ShowTime);
+			ep = ep->next;
+		}
+		//Éú³ÉĞÂµĞÈË
+		static int BornEnemy = 30;//Éú³ÉµĞÈË¼ÇÊ±Æ÷
+		static int NeedBornEnemy = 1;
+		static int EnemyNumber = 0;
+		if (NeedBornEnemy)
+			if (ShowTime)//ShowTime 100msÒ»´Î
+				BornEnemy++;
+		if (BornEnemy >= 10)//Éú³ÉĞÂµÄµĞÈË
+		{
+			EnemyNumber++;
+			if (EnemyNumber > 20)
+				NeedBornEnemy = 0;
+			CreateEnemy(12 * 64, 12 * 64, 5 * 64, 1, 1, rand() % 8, rand() % 4);
+			//	CreateEnemy(12 * 64, 3 * 64, 5, 1, 1, rand() % 7, rand() % 4);
+			//	CreateEnemy(4 * 64, 3 * 64, 10, 1, 1, rand() % 7, rand() % 4);
+			BornEnemy = 0;
+		}
+		//¸üĞÂ±¬Õ¨Âß¼­
+		BoomList*boomp = boomlisthead.next;
+		while (boomp != NULL)
+		{
+			boomp->boom->Logic();
+			boomp = boomp->next;
+		}
+		//Çå³ıÊ§Ğ§¶ÔÏó
+		ClearUselessObj();
+		//¶ÁÈ¡Ê±¼äÍê±Ï 
 	}
-	//¸üĞÂ×Óµ¯Âß¼­
-	BulletList*bp = bulletlisthead.next;
-	while (bp!= NULL)
+	else
 	{
-		bp->bullet->Logic();
-		bp = bp->next;
+		if (KEY_DOWN(VK_RETURN))
+			GameOverFlag = false;
 	}
-	//¸üĞÂµĞÈËÂß¼­
-	EnemyList*ep = enemylisthead.next;
-	while(ep!=NULL)
-	{
-		ep->enemy->Logic(ShowTime);
-		ep = ep->next;
-	}
-	//Éú³ÉĞÂµĞÈË
-	static int BornEnemy =30;//Éú³ÉµĞÈË¼ÇÊ±Æ÷
-	static int NeedBornEnemy = 1;
-	static int EnemyNumber = 0;
-	if(NeedBornEnemy)
-	if (ShowTime)//ShowTime 100msÒ»´Î
-		BornEnemy++;
-	if (BornEnemy >= 10)//Éú³ÉĞÂµÄµĞÈË
-	{
-		EnemyNumber++;
-		if (EnemyNumber > 20)
-			NeedBornEnemy = 0;
-		CreateEnemy(12*64, 12*64, 2, 1, 1, rand()%7, rand()%4);
-		CreateEnemy(12 * 64, 3 * 64, 5, 1, 1, rand() % 7, rand() % 4);
-		CreateEnemy(4 * 64, 3 * 64, 10, 1, 1, rand() % 7, rand() % 4);
-		BornEnemy = 0;
-	}
-	//¸üĞÂ±¬Õ¨Âß¼­
-	BoomList*boomp = boomlisthead.next;
-	while (boomp != NULL)
-	{
-		boomp->boom->Logic();
-		boomp = boomp->next;
-	}
-	//Çå³ıÊ§Ğ§¶ÔÏó
-	ClearUselessObj();
-	//¶ÁÈ¡Ê±¼äÍê±Ï 
 	ShowTime = false;
+	lasttime = GetTickCount();
 }
 //±¬Õ¨äÖÈ¾·½·¨
 bool BoomFire::Draw()
@@ -1731,7 +2120,7 @@ bool BoomFire::Draw()
 	{
 		Sprite_Transform_Draw(Boom1, x, y,
 			28, 28, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		if (Time >= 10) 
+		if (Time >= 10)
 			Sprite_Transform_Draw(Boom2, x-36, y-36,
 				64, 64, 0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	}
@@ -1741,8 +2130,15 @@ bool BoomFire::Draw()
 void BoomFire::Logic()
 {
 	Time++;
-	if (Time >= 20)
-		AddUselessObj(ID);
+	if (WhatBoom == 1)
+	{
+		if (Time >= 10)
+			AddUselessObj(ID);
+	}
+	else {
+		if (Time >= 25)
+			AddUselessObj(ID);
+	}
 	return;
 }
 //±¬Õ¨¹¹Ôìº¯Êı
@@ -1750,4 +2146,723 @@ BoomFire::BoomFire(int x,int y,int wb,int d):
 	x(x),y(y),WhatBoom(wb),Dir(d)
 {
 	Time = 0;
+}
+
+bool MapPiece::Create(int mapid)
+{
+	switch (mapid)
+	{
+	case 0:
+		break;
+	case 1:
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		break;
+	case 2:
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		break;
+	case 3:
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		break;
+	case 4:
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		break;
+
+
+	case 5:
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		break;
+	case 6:
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		break;
+	case 7:
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		break;
+	case 8:
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		break;
+
+
+	case 9:
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		break;
+	case 10:
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		break;
+	case 11:
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		break;
+	case 12:
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		break;
+
+	case 13:
+		CreateMapRect(16, 16, 8, 8);
+		CreateMapRect(24, 16, 8, 8);
+		CreateMapRect(16, 24, 8, 8);
+		CreateMapRect(24, 24, 8, 8);
+		CreateMapRect(0, 16, 8, 8);
+		CreateMapRect(8, 16, 8, 8);
+		CreateMapRect(0, 24, 8, 8);
+		CreateMapRect(8, 24, 8, 8);
+		CreateMapRect(0, 0, 8, 8);
+		CreateMapRect(8, 0, 8, 8);
+		CreateMapRect(0, 8, 8, 8);
+		CreateMapRect(8, 8, 8, 8);
+		CreateMapRect(16, 0, 8, 8);
+		CreateMapRect(24, 0, 8, 8);
+		CreateMapRect(16, 8, 8, 8);
+		CreateMapRect(24, 8, 8, 8);
+		break;
+
+
+	case 14:
+		CreateMapRect(32, 0, 16, 16);
+		break;
+	case 15:
+		CreateMapRect(48, 0, 16, 16);
+		break;
+	case 16:
+		CreateMapRect(48, 16, 16, 16);
+		break;
+	case 17:
+		CreateMapRect(32, 16, 16, 16);
+		break;
+
+
+	case 18:
+		CreateMapRect(32, 0, 16, 16);
+		CreateMapRect(48, 0, 16, 16);
+		break;
+	case 19:
+		CreateMapRect(48, 0, 16, 16);
+		CreateMapRect(48, 16, 16, 16);
+		break;
+	case 20:
+		CreateMapRect(48, 16, 16, 16);
+		CreateMapRect(32, 16, 16, 16);
+		break;
+	case 21:
+		CreateMapRect(32, 0, 16, 16);
+		CreateMapRect(32, 16, 16, 16);
+		break;
+
+
+	case 22:
+		CreateMapRect(32, 0, 16, 16);
+		CreateMapRect(48, 0, 16, 16);
+		CreateMapRect(32, 16, 16, 16);
+		break;
+	case 23:
+		CreateMapRect(32, 0, 16, 16);
+		CreateMapRect(48, 0, 16, 16);
+		CreateMapRect(48, 16, 16, 16);
+		break;
+	case 24:
+		CreateMapRect(48, 16, 16, 16);
+		CreateMapRect(32, 16, 16, 16);
+		CreateMapRect(48, 0, 16, 16);
+		break;
+	case 25:
+		CreateMapRect(48, 16, 16, 16);
+		CreateMapRect(32, 16, 16, 16);
+		CreateMapRect(32, 0, 16, 16);
+		break;
+	case 26:
+		CreateMapRect(48, 16, 16, 16);
+		CreateMapRect(32, 16, 16, 16);
+		CreateMapRect(32, 0, 16, 16);
+		CreateMapRect(48, 0, 16, 16);
+		break;
+
+
+	case 27:
+		CreateMapRect(64, 0, 32, 32);
+		break;
+	case 28:
+		CreateMapRect(96, 0, 32, 32);
+		break;
+	case 29:
+		CreateMapRect(128, 0, 32, 32);
+		break;
+	case 30:
+		CreateMapRect(160, 0, 32, 32);
+		break;
+	case 31:
+		CreateMapRect(192, 0, 32, 32);
+		break;
+	default:
+		break;
+	}
+	return false;
+}
+
+bool MapPiece::BeingCrash(bool flag2,RECT & rect,int dir,int x,int y)
+{
+	bool flag = false,flag1=true;
+	RECT Rect, Rect1, BoomRect = { 0 };
+	RectList*rp = rectlisthead->next;
+	if (rp == NULL)
+		return flag;
+	if (flag2)
+	{
+		switch (dir)
+		{
+		case Dirction::up:
+			BoomRect.left = x - 20;
+			BoomRect.top = y;
+			BoomRect.right = BoomRect.left + 56;
+			BoomRect.bottom = BoomRect.top + 56;
+			break;
+		case Dirction::right:
+			BoomRect.left = x - 40;
+			BoomRect.top = y - 20;
+			BoomRect.right = BoomRect.left + 56;
+			BoomRect.bottom = BoomRect.top + 56;
+			break;
+		case Dirction::below:
+			BoomRect.left = x - 20;
+			BoomRect.top = y-40;
+			BoomRect.right = BoomRect.left + 56;
+			BoomRect.bottom = BoomRect.top + 56;
+			break;
+		case Dirction::lift:
+			BoomRect.left = x ;
+			BoomRect.top = y - 20;
+			BoomRect.right = BoomRect.left + 56;
+			BoomRect.bottom = BoomRect.top + 56;
+			break;
+		default:
+			break;
+		}
+	}
+	if (rp->rect->left < 32)
+	{
+		while (rp != NULL)
+		{
+			Rect1.left = (X + 1) * 64 + rp->rect->left * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &rect, &Rect1)||IntersectRect(&Rect, &BoomRect, &Rect1))
+			{
+				if (rp->last != NULL)
+				{
+					if (rp->next != NULL) {
+						rp->last->next = rp->next;
+						rp->next->last = rp->last;
+					}
+					else
+						rp->last->next = NULL;
+				}
+				else if (rp->next != NULL)
+				{
+					rp->next->last = NULL;
+					rectlisthead->next = rp->next;
+				}
+				else
+				{
+					rectlisthead->next = NULL;
+				}
+				delete rp;
+				flag = true;
+				if (flag1)
+				{
+					switch (dir)
+					{
+					case Dirction::up:
+						BoomRect.left = x - 20;
+						BoomRect.top = y;
+						BoomRect.right = BoomRect.left + 56;
+						BoomRect.bottom = BoomRect.top + 56;
+						break;
+					case Dirction::right:
+						BoomRect.left = x - 40;
+						BoomRect.top = y - 20;
+						BoomRect.right = BoomRect.left + 56;
+						BoomRect.bottom = BoomRect.top + 56;
+						break;
+					case Dirction::below:
+						BoomRect.left = x - 20;
+						BoomRect.top = y - 40;
+						BoomRect.right = BoomRect.left + 56;
+						BoomRect.bottom = BoomRect.top + 56;
+						break;
+					case Dirction::lift:
+						BoomRect.left = x;
+						BoomRect.top = y - 20;
+						BoomRect.right = BoomRect.left + 56;
+						BoomRect.bottom = BoomRect.top + 56;
+						break;
+					default:
+						break;
+					}
+					flag1 = false;
+				}
+				rp = rectlisthead->next;
+			}
+			else
+				rp = rp->next;
+			if (rp == NULL)
+				break;
+		}
+	}
+	else if (rp->rect->left < 64)
+	{
+		while (rp != NULL)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left-32) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &rect, &Rect1))
+			{
+				if (rp->last != NULL)
+				{
+					if (rp->next != NULL) {
+						rp->last->next = rp->next;
+						rp->next->last = rp->last;
+					}
+					else
+						rp->last->next = NULL;
+				}
+				else if (rp->next != NULL)
+				{
+					rp->next->last = NULL;
+					rectlisthead->next = rp->next;
+				}
+				else
+				{
+					rectlisthead->next = NULL;
+				}
+				delete rp;
+				flag = true;
+				rp = rectlisthead->next;
+			}
+			else
+				rp = rp->next;
+			if (rp == NULL)
+				break;
+		}
+
+	}
+	else
+	{
+		return flag;
+	}
+	return flag;
+}
+
+int MapPiece::PECrach(int dir,RECT&playerrect)
+{		
+	RectList*rp = rectlisthead->next;
+	RECT Rect, Rect1;
+	int result=0;
+	if (rp == NULL)
+		return result;
+	switch (dir)
+	{
+	case Dirction::up: {
+		if (rp->rect->left < 32)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + rp->rect->left * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (Rect1.bottom > result)
+						result = Rect1.bottom;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+		}
+		else if (rp->rect->left < 64)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + (rp->rect->left - 32) * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (Rect1.bottom > result)
+						result = Rect1.bottom;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+
+		}
+		else if(rp->rect->left>=96&&rp->rect->left < 128)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 96) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.bottom;
+
+			}
+		}
+		else if (rp->rect->left>=128&&rp->rect->left < 160)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 128) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.bottom;
+
+			}
+
+		}
+		else if (rp->rect->left>=160&&rp->rect->left < 192)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 160) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+				result = Rect1.bottom;
+
+			}
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+	}
+	case Dirction::right: {
+		if (rp->rect->left < 32)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + rp->rect->left * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (result>Rect1.left || result == 0)
+						result = Rect1.left;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+		}
+		else if (rp->rect->left < 64)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + (rp->rect->left - 32) * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (result>Rect1.left || result == 0)
+						result = Rect1.left;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+
+		}
+		else if (rp->rect->left>=96 && rp->rect->left < 128)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 96) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.left;
+			}
+		}
+		else if (rp->rect->left>=128 && rp->rect->left < 160)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 128) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+				result = Rect1.left;
+			}
+
+		}
+		else if (rp->rect->left>=160 && rp->rect->left < 192)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 160) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+				result = Rect1.left;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+	}
+	case Dirction::below: {
+		if (rp->rect->left < 32)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + rp->rect->left * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (result>Rect1.top||result==0)
+						result = Rect1.top;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+		}
+		else if (rp->rect->left < 64)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + (rp->rect->left - 32) * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (result>Rect1.top || result == 0)
+						result = Rect1.top;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+
+		}
+		else if (rp->rect->left>=96 && rp->rect->left < 128)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 96) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.top;
+			}
+		}
+		else if (rp->rect->left>=128 && rp->rect->left < 160)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 128) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.top;
+			}
+
+		}
+		else if (rp->rect->left>=160 && rp->rect->left < 192)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 160) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.top;
+			}
+
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+	}
+	case Dirction::lift: {
+		if (rp->rect->left < 32)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + rp->rect->left * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (Rect1.right > result)
+						result = Rect1.right;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+		}
+		else if (rp->rect->left < 64)
+		{
+			while (rp != NULL)
+			{
+				Rect1.left = (X + 1) * 64 + (rp->rect->left - 32) * 2;
+				Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+				Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+				Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+				if (IntersectRect(&Rect, &playerrect, &Rect1))
+				{
+					if (Rect1.right > result)
+						result = Rect1.right;
+				}
+				rp = rp->next;
+				if (rp == NULL)
+					break;
+			}
+
+		}
+		else if (rp->rect->left>=96 && rp->rect->left < 128)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 96) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.right;
+			}
+		}
+		else if (rp->rect->left>=128 && rp->rect->left < 160)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 128) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.right;
+			}
+
+		}
+		else if (rp->rect->left>=160 && rp->rect->left < 192)
+		{
+			Rect1.left = (X + 1) * 64 + (rp->rect->left - 160) * 2;
+			Rect1.top = (Y + 1) * 64 + rp->rect->top * 2;
+			Rect1.bottom = Rect1.top + (rp->rect->bottom - rp->rect->top) * 2;
+			Rect1.right = Rect1.left + (rp->rect->right - rp->rect->left) * 2;
+			if (IntersectRect(&Rect, &playerrect, &Rect1))
+			{
+					result = Rect1.right;
+			}
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return result;
 }

@@ -78,7 +78,8 @@ void Sprite_Animate(int &frame, int startframe, int endframe, int direction, int
 void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, int height,
     int frame = 0, int columns = 1, float rotation = 0.0f,
     float scaleW = 1.0f, float scaleH = 1.0f, D3DCOLOR color = D3DCOLOR_XRGB(255, 255, 255));
-
+void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, RECT*rect,
+	int frame, int columns, float rotation, float scaleW, float scaleH, D3DCOLOR color);
 void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, int height,
     int frame = 0, int columns = 1, float rotation = 0.0f, float scaling = 1.0f,
     D3DCOLOR color = D3DCOLOR_XRGB(255, 255, 255));

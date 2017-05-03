@@ -217,7 +217,36 @@ void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, in
     D3DXMatrixIdentity(&mat);
     spriteObj->SetTransform(&mat);
 }
+void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, RECT*rect,
+	int frame, int columns, float rotation, float scaleW, float scaleH, D3DCOLOR color)
+{
+	//create a scale vector
+	D3DXVECTOR2 scale(scaleW, scaleH);
 
+	//create a translate vector
+	D3DXVECTOR2 trans((float)x, (float)y);
+
+	//set center by dividing width and height by two
+	D3DXVECTOR2 center((float)(rect->right-rect->left * scaleW) / 2, (float)(rect->bottom-rect->top * scaleH) / 2);
+
+	//create 2D transformation matrix
+	D3DXMATRIX mat;
+	D3DXMatrixTransformation2D(&mat, NULL, 0, &scale, &center, rotation, &trans);
+
+	//tell sprite object to use the transform
+	spriteObj->SetTransform(&mat);
+
+	//calculate frame location in source image
+
+
+	//draw the sprite frame
+	spriteObj->Draw(image, rect, NULL, NULL, color);
+
+
+	//added in chapter 14
+	D3DXMatrixIdentity(&mat);
+	spriteObj->SetTransform(&mat);
+}
 void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, int height,
     int frame, int columns, float rotation, float scaling, D3DCOLOR color)
 {

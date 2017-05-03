@@ -58,8 +58,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(102));;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hIcon = NULL;
+    wc.hCursor =NULL;
     wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszMenuName = NULL;
     wc.lpszClassName = Global::Window::GameTitle.c_str();
@@ -154,8 +154,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             if (currentTime > refreshTime + 1000.0f / Global::Window::targetFps)
             {
                 refreshTime = currentTime;
-
                 Game_Update(window);//DirectX循环
+
             }
 
             //其余时间全用来渲染

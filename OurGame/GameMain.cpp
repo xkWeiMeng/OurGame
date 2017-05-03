@@ -16,7 +16,7 @@ bool Game_Init(HWND window)
     if (!Direct3D_Init(window, Global::Window::ScreenWidth, Global::Window::ScreenHeight, Global::Window::FullScreen))
     {
         ShowMessage("Direct3D≥ı ºªØ ß∞‹");
-        return false;
+        return false; 
     }
     if (!DirectInput_Init(window))
     {
