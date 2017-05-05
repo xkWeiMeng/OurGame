@@ -13,9 +13,12 @@ enum GAME_STATE
     //欢迎场景
     Home = 1,
     //游戏场景
-    Playing = 2,
+    SinglePlayer = 2,
+	DoublePlayer = 3,
+	//设计地图
+	DesignMap=4,
     //关于场景
-    About = 3
+    About = 5
 };
 namespace Global {
     namespace Window {

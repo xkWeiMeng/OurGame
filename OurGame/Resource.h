@@ -10,7 +10,7 @@ namespace Resource {
         const D3DCOLOR SelectedColor = D3DCOLOR_XRGB(255, 128, 128);
         const D3DCOLOR UnselectedColor = D3DCOLOR_XRGB(64, 64, 64);
 
-        char* const OptionsStr[] = { "单人游戏","多人游戏","关于我们" };
+        char* const OptionsStr[] = { "单人游戏","双人游戏","设计地图","关于我们" };
     }
     namespace Cursor {
         char* const Normal = "Resources\\Cursor\\光标.png";

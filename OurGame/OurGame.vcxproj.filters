@@ -78,6 +78,9 @@
     <ClCompile Include="AboutScene.cpp">
       <Filter>源文件\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="DesignMapScene.cpp">
+      <Filter>源文件\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameMain.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="resource1.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DesignMapScene.h">
+      <Filter>头文件\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

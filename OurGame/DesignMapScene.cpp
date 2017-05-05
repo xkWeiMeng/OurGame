@@ -374,7 +374,6 @@ void DMS::DrawNet()
 //»­µØÍ¼¿éÑ¡Ïî
 void DMS::DrawMapPieceChoose(int choose)
 {
-
 	switch (choose)
 	{
 	case 0:

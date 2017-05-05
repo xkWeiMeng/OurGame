@@ -60,12 +60,12 @@ void HomeScene::Update()
     if (Key_Up(DIK_DOWN))
     {
         HomeScene::choose++;
-        HomeScene::choose %= 3;
+        HomeScene::choose %= 4;
     }
     if (Key_Up(DIK_UP))
     {
-        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 2;
-        HomeScene::choose %= 3;
+        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 3;
+        HomeScene::choose %= 4;
     }
     if (Key_Up(DIK_SPACE))
     {
@@ -73,12 +73,13 @@ void HomeScene::Update()
         switch (choose)
         {
         case 0:
-            //Game_ChangeScene();
+        case 1://双人游戏和单人游戏的接口一样
+			Game_ChangeScene(GAME_STATE::SinglePlayer);
             break;
-        case 1:
-			Game_ChangeScene(GAME_STATE::Playing);
-            break;
-        case 2:
+		case 2:
+			Game_ChangeScene(GAME_STATE::DesignMap);
+			break;
+        case 3:
             Game_ChangeScene(GAME_STATE::About);
             break;
         default:
@@ -89,7 +90,7 @@ void HomeScene::Update()
 void HomeScene::Render()
 {
     HomeScene::Draw_Background();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
         FontPrint(font, 450, 700 + i * 40, Resource::Home::OptionsStr[i], i == HomeScene::choose ? Resource::Home::SelectedColor : Resource::Home::UnselectedColor);
     }
 }

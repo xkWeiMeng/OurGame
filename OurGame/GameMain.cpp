@@ -63,7 +63,7 @@ void Game_Render(HWND window, HDC device)
     if (!d3dDev) return;
 
     //ÇåÆÁ
-    d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 255, 179, 167), 1.0f, 0);
+    d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 65, 105, 225 ), 1.0f, 0);
 
     //¿ªÊ¼äÖÈ¾
     if (d3dDev->BeginScene())
@@ -104,9 +104,13 @@ void Game_ChangeScene(GAME_STATE to)
         case GAME_STATE::Home:
             scene = new HomeScene();
 			break;
-        case GAME_STATE::Playing:
+		case GAME_STATE::DoublePlayer:
+        case GAME_STATE::SinglePlayer:
 			scene = new GamingScene();
             break;
+		case GAME_STATE::DesignMap:
+			scene = new DesignMapScene();
+			break;
         case GAME_STATE::About:
             scene = new AboutScene();
             break;
