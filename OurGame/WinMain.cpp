@@ -155,7 +155,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             {
                 refreshTime = currentTime;
                 Game_Update(window);//DirectX循环
-
             }
 
             //其余时间全用来渲染

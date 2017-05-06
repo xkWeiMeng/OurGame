@@ -1,59 +1,77 @@
 #include "GamingScene.h"
 #define EnemyNumberMAX 21
-LPDIRECT3DSURFACE9 GrayRect=NULL;
-LPDIRECT3DSURFACE9 BlackRect = NULL;
-/*ÎÆÀí*/
-LPDIRECT3DTEXTURE9 Flag = NULL;
-LPDIRECT3DTEXTURE9 Something = NULL;
-LPDIRECT3DTEXTURE9 Tile = NULL;
-LPDIRECT3DTEXTURE9 Player_1 = NULL;
-LPDIRECT3DTEXTURE9 Player_2 = NULL;
-LPDIRECT3DTEXTURE9 Bullet_TXTTURE = NULL;
-LPDIRECT3DTEXTURE9 Enemy_TXTTURE = NULL;
-LPDIRECT3DTEXTURE9 Award = NULL;
-LPDIRECT3DTEXTURE9 Boom1 = NULL; 
-LPDIRECT3DTEXTURE9 Boom2 = NULL;
-LPDIRECT3DTEXTURE9 GameOver = NULL;
-LPDIRECT3DTEXTURE9 Shield = NULL;
-LPDIRECT3DTEXTURE9 Flicker[9] = { NULL };
-/*±äÁ¿*/
-unsigned long lasttime = 0;
-int StartTime = 0, NowTime, SurplusTime = 0;
-bool ShowTime = false;
-bool GameOverFlag = false;
-/*¶ÔÏó*/ 
-Player player;
-Player Player2;
-Player &Player1 = player;
-/*¹¤¾ßº¯Êý*/
-int  Crash(int iswho, int x, int y, int speed, int dir, bool power,int shooter,unsigned long id,int);
-void ReadMap(int x, int y, RECT&rect1, RECT&rect2);//¶ÁÈ¡µØÍ¼ÐÅÏ¢
-void AddUselessObj(unsigned long id);
-bool DelListNode(EnemyList*listhead, unsigned long id);//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
-bool DelListNode(BulletList*listhead, unsigned long id);//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
-bool DelListNode(BoomList*listhead, unsigned long id);//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
-void DelUselessObj();
-void ClearUselessObj();
-void CreateEnemy(int x, int y, int speed, int hp, int as, int grade, int dir);
-void CreateBoom(int x, int y, int whatboom, int Dir);
-int MaxNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
-int MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
-void DIDA();
-/*¹¤¾ßº¯Êý*/
-BulletListHead bulletlisthead;//×Óµ¯Á´±íÍ·
-EnemyListHead enemylisthead;//µÐÈËÁ´±íÍ·
-UselessObjHead uselessobjhead;//Ê§Ð§¶ÔÏóÁ´±íÍ·
-BoomListHead boomlisthead;//±¬Õ¨Á´±íÍ·
-MapPieceListHead mappiecelisthead;
+namespace GS {
+	LPDIRECT3DSURFACE9 GrayRect = NULL;
+	LPDIRECT3DSURFACE9 BlackRect = NULL;
+	/*ÎÆÀí*/
+	LPDIRECT3DTEXTURE9 Flag = NULL;
+	LPDIRECT3DTEXTURE9 Something = NULL;
+	LPDIRECT3DTEXTURE9 Tile = NULL;
+	LPDIRECT3DTEXTURE9 Player_1 = NULL;
+	LPDIRECT3DTEXTURE9 Player_2 = NULL;
+	LPDIRECT3DTEXTURE9 Bullet_TXTTURE = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_TXTTURE = NULL;
+	LPDIRECT3DTEXTURE9 Award = NULL;
+	LPDIRECT3DTEXTURE9 Boom1 = NULL;
+	LPDIRECT3DTEXTURE9 Boom2 = NULL;
+	LPDIRECT3DTEXTURE9 GameOver = NULL;
+	LPDIRECT3DTEXTURE9 Shield = NULL;
+	LPDIRECT3DTEXTURE9 Hole = NULL;
+	LPDIRECT3DTEXTURE9 Number = NULL;
+	LPDIRECT3DTEXTURE9 Flicker[9] = { NULL };
+	/*±äÁ¿*/
+	unsigned long lasttime = 0;
+	int StartTime = 0, NowTime, SurplusTime = 0;
+	bool ShowTime = false;
+	bool GameOverFlag = false;
+	bool IsDoublePlayer = false;;
+	/*¶ÔÏó*/
+	Player player;
+	Player2 player2;
+	Player &Player1 = player;
+	void ShowGameOver();
+	//¶¨Á¿
+	const int EnemyNum=100;
 
-static unsigned long IDNumber = 0;
-int EnemyXY[EnemyNumberMAX][2];//µÐÈËÎ»ÖÃ×ø±ê±í
-int Map[13][13]; //µÚÒ»¸öÊÇyÖá£¬µÚ¶þ¸öÊÇxÖá
+	/*¹¤¾ßº¯Êý*/
+	int  Crash(int iswho, int x, int y, int speed, int dir, bool power, int shooter, unsigned long id, int);
+	void DrawMap();
+	void CreateMapPiece();
+	bool ReadMapInHD(char * filename);
+	bool WriteMapToHD(char * filename);
+	void FillRect(RECT & rect, long l, long r, long t, long b);
+	void ReadMap(int x, int y, RECT&rect1, RECT&rect2);//¶ÁÈ¡µØÍ¼ÐÅÏ¢
+	void AddUselessObj(unsigned long id);
+	bool DelListNode(EnemyList*listhead, unsigned long id);//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+	bool DelListNode(BulletList*listhead, unsigned long id);//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+	bool DelListNode(BoomList*listhead, unsigned long id);//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+	void DelUselessObj();
+	void DrawNet();
+	void ClearUselessObj();
+	void CreateEnemy(int x, int y, int speed, int hp, int as, int grade, int dir);
+	void CreateBoom(int x, int y, int whatboom, int Dir);
+//	int  MaxNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
+//	int  MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
+	void DIDA();
+	void NewStage();
+	/*¹¤¾ßº¯Êý*/
+	BulletListHead bulletlisthead;//×Óµ¯Á´±íÍ·
+	EnemyListHead enemylisthead;//µÐÈËÁ´±íÍ·
+	UselessObjHead uselessobjhead;//Ê§Ð§¶ÔÏóÁ´±íÍ·
+	BoomListHead boomlisthead;//±¬Õ¨Á´±íÍ·
+	MapPieceListHead mappiecelisthead;
+
+	static unsigned long IDNumber = 0;
+	int EnemyXY[EnemyNumberMAX][2];//µÐÈËÎ»ÖÃ×ø±ê±í
+	int Map[13][13]; //µÚÒ»¸öÊÇyÖá£¬µÚ¶þ¸öÊÇxÖá
+
+}
+using namespace GS;
 //µØÍ¼
 //ÓÎÏ·½áÊø»­Ãæ
-void ShowGameOver()
+void GS::ShowGameOver()
 {
-	static int x = 363,y = 960;
+	static int x = 232,y = 960;
 	static int oldtime=GetTickCount();
 
 	if (GetTickCount() > oldtime + 17)
@@ -61,12 +79,12 @@ void ShowGameOver()
 		y -= 8;
 		oldtime = GetTickCount();
 	}
-	if(y<368)
-		Sprite_Transform_Draw(GameOver, x, 368, 248, 160,
-			0, 1, 0, 1, D3DCOLOR_XRGB(255, 255, 255));
+	if(y<320)
+		Sprite_Transform_Draw(GameOver, x, 320, 248, 160,
+			0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	else
 		Sprite_Transform_Draw(GameOver, x, y, 248, 160,
-			0, 1, 0, 1, D3DCOLOR_XRGB(255, 255, 255));
+			0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 
 }
 //µÐÈËAI
@@ -166,7 +184,7 @@ bool Enemy::Logic(bool st)
 		Shoot(2);
 	}
 	*/
-	unsigned long srtime = GetTickCount() - lasttime;
+	double  srtime = GetTickCount() - lasttime;
 	switch (d)
 	{
 	case Dirction::up:
@@ -330,6 +348,35 @@ bool Enemy::Logic(bool st)
 			break;
 		}
 	}
+	if (IsDoublePlayer)
+	{
+		EnemyRect.bottom = player2.player.y + 56;
+		EnemyRect.right = player2.player.x + 56;
+		EnemyRect.left = player2.player.x;
+		EnemyRect.top = player2.player.y;
+		if (IntersectRect(&Rect, &EnemyRect, &PlayerRect))
+		{
+			CrashingFlag = true;
+			switch (d)
+			{
+			case Dirction::up:
+				player.y = player2.player.y + 56;
+				break;
+			case Dirction::right:
+				player.x = player2.player.x - 56;
+				break;
+			case Dirction::below:
+				player.y = player2.player.y - 56;
+				break;
+			case Dirction::lift:
+				player.x = player2.player.x + 56;
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
 	return false;
 }
 
@@ -351,6 +398,7 @@ Player::Player()
 	player.height = 28;
 	BulletSpeed = 64*12;
 	FlickerFrame = 0;
+	Lift = 1;
 }
 //Íæ¼ÒÉä»÷
 bool Player::Shoot(int shooter) {
@@ -393,6 +441,10 @@ bool Player::Draw()
 {
 	static int lasttime=GetTickCount();
 	static bool ChangeFrame = false;
+	Sprite_Transform_Draw(Number, 960, 544, 14, 14, Lift / 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	Sprite_Transform_Draw(Number, 993, 544, 14, 14, Lift % 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+
+
 	if (ChangeFrame) {
 		Sprite_Transform_Draw(Player_1, player.x, player.y, player.width, player.height,
 			Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
@@ -407,12 +459,10 @@ bool Player::Draw()
 	}
 	if (GetTickCount() > lasttime + 50)
 	{
-		FlickerFrame++;
+		FlickerFrame=FlickerFrame<8? FlickerFrame + 1 :0;
 		lasttime = GetTickCount();
-		if (FlickerFrame > 8)
-			FlickerFrame = 0;
 	}
-	Sprite_Draw_Frame(Flicker[FlickerFrame], player.x - 372, player.y - 272, 0, 800, 600, 1);
+//	Sprite_Draw_Frame(Flicker[FlickerFrame], player.x - 372, player.y - 272, 0, 800, 600, 1);
 	return false;
 }
 //Ö»ÎªPlayer£º£ºLogic·þÎñµÄº¯Êý 
@@ -471,7 +521,7 @@ int MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4
 //Íæ¼ÒÂß¼­·½·¨
 bool Player::Logic(int d)
 {
-	unsigned long srtime = GetTickCount() - lasttime;
+	double srtime = GetTickCount() - lasttime;
 	switch (d)
 	{
 	case Dirction::up:
@@ -765,9 +815,37 @@ bool Player::Logic(int d)
 		}
 		ep = ep->next;
 	}
+	//ºÍÍæ¼Ò¶þµÄÅö×²¼ì²â
+	if (IsDoublePlayer)
+	{
+		EnemyRect.bottom = player2.player.y + 56;
+		EnemyRect.right = player2.player.x + 56;
+		EnemyRect.left = player2.player.x;
+		EnemyRect.top = player2.player.y;
+		if (IntersectRect(&Rect, &EnemyRect, &PlayerRect))
+		{
+			switch (d)
+			{
+			case Dirction::up:
+				player.y = player2.player.y + 56;
+				break;
+			case Dirction::right:
+				player.x = player2.player.x - 56;
+				break;
+			case Dirction::below:
+				player.y = player2.player.y - 56;
+				break;
+			case Dirction::lift:
+				player.x = player2.player.x + 56;
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
 	return false;
 }
-
 bool Player::GetHurt(int power)
 {
 	Health_Point--;
@@ -810,7 +888,7 @@ Bullet::Bullet(int shooter,int x, int y, int S, int D) :Speed(S), Dir(D),Shooter
 bool Bullet::Logic()
 {
 	//Åö×²¼ì²â
-	unsigned long srtime = GetTickCount() - lasttime;
+	 double srtime = GetTickCount() - lasttime;
 	MovedPixel = Speed*srtime / 1000;
 	switch (Dir)
 	{
@@ -884,7 +962,7 @@ int PCrash()
 
 	return 1 ;
 }
-int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter,unsigned long id,int movedmixel) {
+int GS::Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter,unsigned long id,int movedmixel) {
 	//µØÍ¼±ß½ç
 	static  RECT MapEdgeTop = { 0,0,1024,64 },
 		         MapEdgeBelow = { 0,896,1024,960 },
@@ -951,12 +1029,21 @@ int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter,unsigne
 		PlayerRect.top = Player1.player.y;
 		if (IntersectRect(&Rect, &PlayerRect, &BulletRect))
 		{
-			if (!Player1.GetHurt(0))
-			{
-				GameOverFlag = true;
-				Sound::PlayerBoom->Play();
-			}
+			Player1.GetHurt(0);
 			return 1;
+		}
+		if (IsDoublePlayer)
+		{
+			PlayerRect.bottom = player2.player.y + 56;
+			PlayerRect.right = player2.player.x + 56;
+			PlayerRect.left = player2.player.x;
+			PlayerRect.top = player2.player.y;
+			if (IntersectRect(&Rect, &PlayerRect, &BulletRect))
+			{
+				player2.GetHurt(0);
+				return 1;
+			}
+
 		}
 	}
 	//¼ì²â×Óµ¯Åö×²
@@ -1117,7 +1204,7 @@ int Crash(int iswho,int x,int y,int speed,int dir,bool power,int shooter,unsigne
 	}
 }
 //ÓÎÏ·µØÍ¼»æ»­º¯Êý       
-void DrawMap()
+void GS::DrawMap()
 {
 for (int i = 0; i<13; i++)
 	for (int j = 0; j < 13; j++){
@@ -1216,7 +1303,7 @@ for (int i = 0; i<13; i++)
 }
 /*´´½¨¶ÔÏó*/
 //´´½¨µØÍ¼¾«Áé
-void CreateMapPiece()
+void GS::CreateMapPiece()
 {
 	for (int x = 0;x < 13; x++)
 		for (int y = 0; y < 13; y++) {
@@ -1255,7 +1342,7 @@ void CreateMapPiece()
 		}
 }
 //¶ÁÈ¡Ó²ÅÌÉÏµØÍ¼µÄÐÅÏ¢
-bool ReadMapInHD(char*filename)
+bool GS::ReadMapInHD(char*filename)
 {
 	char buf[13][13];
 	ifstream in(filename, ios::in | ios::binary);
@@ -1279,7 +1366,7 @@ bool ReadMapInHD(char*filename)
 	return 0;
 }
 //Ð´µ±Ç°µØÍ¼ÐÅÏ¢µ½Ó²ÅÌ
-bool WriteMapToHD(char*filename)
+bool GS::WriteMapToHD(char*filename)
 {
 	char buf;
 	ofstream out(filename, ios::out | ios::binary);
@@ -1364,7 +1451,7 @@ void MapPiece::CreateMapRect(int x, int y, int wight, int hight)
 
 }
 //´´½¨±¬Õ¨
-void CreateBoom(int x,int y,int whatboom,int Dir)
+void GS::CreateBoom(int x,int y,int whatboom,int Dir)
 {
 	BoomFire*b = new BoomFire(x,y, whatboom, Dir);
 	IDNumber++;
@@ -1397,7 +1484,7 @@ void CreateBoom(int x,int y,int whatboom,int Dir)
 
 }
 //´´½¨µÐÈË
-void CreateEnemy(int x,int y,int speed,int hp,int as,int grade,int dir)
+void GS::CreateEnemy(int x,int y,int speed,int hp,int as,int grade,int dir)
 {
 	int NewEnemyX = x;
 	int NewEnemyY = y;
@@ -1435,7 +1522,7 @@ void CreateEnemy(int x,int y,int speed,int hp,int as,int grade,int dir)
 }
 /*¹¤¾ßº¯Êý*/
 //Ìî³äRECT
-void FillRect(RECT&rect,long l=-1, long r=-1, long t=-1, long b=-1)
+void GS::FillRect(RECT&rect,long l=-1, long r=-1, long t=-1, long b=-1)
 {
 	rect.left = l;
 	rect.right = r;
@@ -1443,7 +1530,7 @@ void FillRect(RECT&rect,long l=-1, long r=-1, long t=-1, long b=-1)
 	rect.bottom = b;
 }
 //¶ÁÈ¡µØÍ¼ÐÅÏ¢
-void ReadMap(int x,int y,RECT&rect1, RECT&rect2)
+void GS::ReadMap(int x,int y,RECT&rect1, RECT&rect2)
 {
 	switch (Map[y][x])
 	{
@@ -1533,7 +1620,7 @@ void BuidMap()
 
 }
 //»­¸¨ÖúÍø¸ñ
-void DrawNet()
+void GS::DrawNet()
 {
 	RECT rect;
 	for (int i = 0; i < 12; i++)
@@ -1549,7 +1636,7 @@ void DrawNet()
 	}
 }
 //Çå³ýÊ§Ð§¶ÔÏó
-void ClearUselessObj()
+void GS::ClearUselessObj()
 {
 	UselessObj*up = uselessobjhead.next;
 	//Çå³ýÊ§Ð§×Óµ¯
@@ -1636,7 +1723,7 @@ bool AddListNode(EnemyList*listhead, int id)
 		listhead->last=
 }
 */
-void AddUselessObj(unsigned long id)
+void GS::AddUselessObj(unsigned long id)
 {
 	UselessObj*p = new UselessObj;
 	p->next = uselessobjhead.next;
@@ -1644,14 +1731,14 @@ void AddUselessObj(unsigned long id)
 	uselessobjhead.next = p;
 }
 //É¾³ýÁ´±íÔªËØ
-void DelUselessObj()
+void GS::DelUselessObj()
 {
 	UselessObj*p = uselessobjhead.next;
 	if(p!=NULL)
 	uselessobjhead.next = p->next;
 	delete p;
 }
-bool DelListNode(EnemyList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+bool GS::DelListNode(EnemyList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
 {
 	EnemyList*p = listhead;
 	while (p != NULL)
@@ -1685,7 +1772,7 @@ bool DelListNode(EnemyList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ
 	return false;
 }
 
-bool DelListNode(BulletList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+bool GS::DelListNode(BulletList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
 {
 	BulletList*p = listhead;
 	while (p != NULL)
@@ -1719,7 +1806,7 @@ bool DelListNode(BulletList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·
 	return false;
 }
 
-bool DelListNode(BoomList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+bool GS::DelListNode(BoomList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
 {
 	BoomList*p = listhead;
 	while (p != NULL)
@@ -1754,7 +1841,7 @@ bool DelListNode(BoomList*listhead, unsigned long id)//É¾³ý³É¹¦·µ»Øtrue£¬·ñÔò·µ»
 }
 
 //²úÉúÊ±¼äÂö³å
-void DIDA() {
+void GS::DIDA() {
 	NowTime = (int)GetTickCount();
 	if (NowTime > StartTime + 100)
 	{
@@ -1774,7 +1861,9 @@ GamingScene::~GamingScene()
 { 
 
 }
-//³¡¾°³õÊ¼»¯
+      //³¡¾°³õÊ¼»¯
+	  //³¡¾°³õÊ¼»¯
+	  //³¡¾°³õÊ¼»¯
 bool GamingScene::Init()
 {
 	//
@@ -1888,6 +1977,19 @@ bool GamingScene::Init()
 		ShowMessage("×°ÔØ µÐÈË ÎÆÀíÊ§°Ü!");
 		return false;
 	}
+	Hole = LoadTexture(Resource::Texture::Hole, D3DCOLOR_XRGB(4, 4, 4));
+	if (!Hole)
+	{
+		ShowMessage("×°ÔØ ¿× ÎÆÀíÊ§°Ü!");
+		return false;
+	}
+	Number = LoadTexture(Resource::Texture::Number, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Number)
+	{
+		ShowMessage("×°ÔØ Êý×Ö ÎÆÀíÊ§°Ü!");
+		return false;
+	}
+
 	//×°ÔØÉÁ¹â
 	string png = ".png";
 	string path = "Resources\\Texture\\";
@@ -1928,11 +2030,15 @@ bool GamingScene::Init()
 	//ÔÚÕâÑ¡Ôñ¹Ø¿¨
 	ReadMapInHD("Map\\test.map");
 	CreateMapPiece();
+	//ÅÐ¶ÏÊÇ·ñË«ÈËÓÎÏ·
+	IsDoublePlayer = Global::Home::selectedType == 1 ? true : false;
 	//³õÊ¼»¯ÉùÒô×ÊÔ´
 	Sound::Sound_Init();
 	Sound::Start->Play();
 	return 1;
 }
+//³¡¾°³õÊ¼»¯
+//³¡¾°³õÊ¼»¯
 
 void GamingScene::End()
 {
@@ -1963,12 +2069,15 @@ void GamingScene::Render()
 		Sprite_Transform_Draw(Something, 960, 512, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 		Sprite_Transform_Draw(Something, 928, 544, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 		//Íæ¼Ò¶þµÄÐÅÏ¢
-		Sprite_Transform_Draw(Something, 928, 608, 14, 14, 4, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		Sprite_Transform_Draw(Something, 960, 608, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		Sprite_Transform_Draw(Something, 928, 640, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		if (IsDoublePlayer) {
+			Sprite_Transform_Draw(Something, 928, 608, 14, 14, 4, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+			Sprite_Transform_Draw(Something, 960, 608, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+			Sprite_Transform_Draw(Something, 928, 640, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		}
 		//»­Íæ¼ÒÒ»
 		player.Draw();
-		//Player2.Draw();
+		if(IsDoublePlayer)
+		player2.Draw();
 		//»­µØÍ¼
 		MapPieceList* mp=mappiecelisthead.next;
 		while (mp != NULL)
@@ -2021,6 +2130,8 @@ void GamingScene::Update()
 			StarSoundPlaying = false;
 		}
 	if (!GameOverFlag) {
+
+		//Íæ¼ÒÒ»
 		if (KEY_DOWN(VK_UP) && !KEY_DOWN(VK_RIGHT) && !KEY_DOWN(VK_LEFT))
 		{
 			player.Logic(Dirction::up);
@@ -2041,7 +2152,6 @@ void GamingScene::Update()
 			player.Logic(Dirction::right);
 			//right
 		}
-
 		//Íæ¼ÒÉä»÷
 		static int ShootTime = 10;
 		if (ShowTime)
@@ -2054,6 +2164,11 @@ void GamingScene::Update()
 				player.Shoot(0);
 				ShootTime = 0;
 			}
+
+		}
+		//Íæ¼Ò¶þ
+		if (IsDoublePlayer)
+		{
 
 		}
 		//¸üÐÂ×Óµ¯Âß¼­
@@ -2093,6 +2208,37 @@ void GamingScene::Update()
 		{
 			boomp->boom->Logic();
 			boomp = boomp->next;
+		}
+		//ÅÐ¶ÏÍæ¼ÒÑªÁ¿ÒÔ¾ö¶¨ÓÎÏ·×´Ì¬
+		if (!IsDoublePlayer)
+		{
+			if (player.Health_Point <= 0)
+			{
+				player.Lift--;
+				player.Health_Point = 1;
+			}
+			if (player.Lift <= 0)
+			{
+				GameOverFlag = true;
+			}
+		}
+		else
+		{
+			if (player.Health_Point <= 0)
+			{
+				player.Lift--;
+				player.Health_Point = 1;
+			}
+			if (player2.Health_Point <= 0)
+			{
+				player2.Lift--;
+				player2.Health_Point = 1;
+			}
+			if (player.Lift <= 0 && player2.Lift <= 0)
+			{
+				GameOverFlag = true;
+			}
+
 		}
 		//Çå³ýÊ§Ð§¶ÔÏó
 		ClearUselessObj();
@@ -2865,4 +3011,103 @@ int MapPiece::PECrach(int dir,RECT&playerrect)
 		break;
 	}
 	return result;
+}
+
+bool Player2::Draw()
+{
+	static int lasttime = GetTickCount();
+	static bool ChangeFrame = false;
+	Sprite_Transform_Draw(Number, 960, 640, 14, 14, Lift/10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	Sprite_Transform_Draw(Number, 992, 640, 14, 14, Lift%10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+
+	if (ChangeFrame) {
+		Sprite_Transform_Draw(Player_2, player.x, player.y, player.width, player.height,
+			Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
+			ChangeFrame = !ChangeFrame;
+	}
+	else {
+		Sprite_Transform_Draw(Player_2, player.x, player.y, player.width, player.height,
+			Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
+			ChangeFrame = !ChangeFrame;
+	}
+	if (GetTickCount() > lasttime + 50)
+	{
+		FlickerFrame = FlickerFrame<8 ? FlickerFrame + 1 : 0;
+		lasttime = GetTickCount();
+	}
+	//	Sprite_Draw_Frame(Flicker[FlickerFrame], player.x - 372, player.y - 272, 0, 800, 600, 1);
+	return false;
+
+}
+
+void GS::NewStage()
+{
+	//Çå³ýµØÍ¼¿é
+	MapPieceList*buf;
+	MapPieceList*mp = mappiecelisthead.next;
+	for(int i=0;i<13;i++)
+		for (int j = 0; j < 13; j++)
+		{
+			while (mp != NULL)
+			{
+				if (i == mp->mappiece->X&&j == mp->mappiece->Y)
+				{
+					buf = mp;
+					mp = mp->next;
+					delete buf;
+				}
+				else
+				mp = mp->next;
+			}
+		}
+	mappiecelisthead.next = NULL;
+	//Çå³ýµÐÈË
+	EnemyList* ep = enemylisthead.next;
+	while (ep != NULL)
+	{
+		AddUselessObj(ep->enemy->ID);
+		ep = ep->next;
+	}
+	//Çå³ý×Óµ¯
+	BulletList*bp = bulletlisthead.next;
+	while (bp != NULL)
+	{
+		AddUselessObj(bp->bullet->ID);
+		bp = bp->next;
+	}
+	//Çå³ý±¬Õ¨
+	BoomList*boomp = boomlisthead.next;
+	while (boomp != NULL)
+	{
+		AddUselessObj(boomp->boom->ID);
+		boomp = boomp->next;
+	}
+
+	ClearUselessObj();
+	//ÖØÖÃÍæ¼ÒÊý¾Ý
+	player.Speed = 5 * 64;
+	player.Attack_Speed = 5;
+	player.Dir = Dirction::up;
+	player.Grade = 3;
+	player.player.x = 64 * 6;
+	player.player.y = 64 * 13;
+	player.BulletSpeed = 64 * 12;
+	player.Lift = 1;
+	player.Health_Point = 1;//Íæ¼ÒÑªÁ¿
+	
+	if (IsDoublePlayer)
+	{
+		player2.Speed = 5 * 64;
+		player2.Attack_Speed = 5;
+		player2.Dir = Dirction::up;
+		player2.Grade = 3;
+		player2.player.x = 64 * 6;
+		player2.player.y = 64 * 13;
+		player2.BulletSpeed = 64 * 12;
+		player2.Lift = 1;
+		player2.Health_Point = 1;//Íæ¼ÒÑªÁ¿
+
+	}
 }

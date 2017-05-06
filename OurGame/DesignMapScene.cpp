@@ -57,6 +57,10 @@ void DesignMapScene::End()
 {
 	BlackRect->Release();
 	Tile->Release();
+	for (int i = 0; i < 13; i++)
+		for (int j = 0; j < 13; j++)
+			Map[j][i] = 0;
+	FileNameBuf.clear();
 }
 
 void DesignMapScene::Update()
@@ -88,24 +92,18 @@ void DesignMapScene::Update()
 
 		if (Key_Up(DIK_UP))
 		{
-			NowMyChoose--;
-			if (NowMyChoose == 0)
-				NowMyChoose = 30;
-
+			NowMyChoose=NowMyChoose==1?30:NowMyChoose-1;
 		}
 
 		if (Key_Up(DIK_DOWN))
 		{
-			NowMyChoose++;
-			if (NowMyChoose == 31)
-				NowMyChoose = 1;
+			NowMyChoose=NowMyChoose==30?1:NowMyChoose+1;
 		}
 
 		if (Key_Up(DIK_LEFT))
 		{
-			MapPieceChoose--;
-			if (MapPieceChoose == -1)
-				MapPieceChoose = 4;
+			MapPieceChoose=MapPieceChoose==0?4:MapPieceChoose-1;
+
 			switch (MapPieceChoose)
 			{
 			case 0:
@@ -130,9 +128,8 @@ void DesignMapScene::Update()
 
 		if (Key_Up(DIK_RIGHT))
 		{
-			MapPieceChoose++;
-			if (MapPieceChoose == 5)
-				MapPieceChoose = 0;
+			MapPieceChoose=MapPieceChoose==4?0:MapPieceChoose+1;
+
 			switch (MapPieceChoose)
 			{
 			case 0:

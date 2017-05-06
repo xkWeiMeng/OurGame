@@ -23,7 +23,7 @@ public:
 	Bullet(int,int ,int,int,int);//子弹初始化
 	bool Logic();//子弹碰撞检测
 	bool Draw();
-
+	bool Alive;
 private:
 
 };
@@ -55,6 +55,7 @@ public:
 	SPRITE player;
 	Player();
 	int FlickerFrame;
+	int Lift;;//玩家生命数
 	int Health_Point;//玩家血量
 	int BulletSpeed;//玩家子弹飞行速度
 	int Speed;//移动速度
@@ -65,6 +66,11 @@ public:
 	bool Draw();
 	bool Logic(int);
 	bool GetHurt(int power);
+};
+class Player2 :public Player
+{
+public:
+	bool Draw();
 };
 class Enemy :public Player
 {

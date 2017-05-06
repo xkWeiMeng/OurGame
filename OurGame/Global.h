@@ -36,7 +36,7 @@ namespace Global {
         const float targetFps = 480.0f;
     }
     namespace Home {
-        //最终的选项，0：单人游戏；1：多人游戏；2：关于我们
+        //最终的选项，0：单人游戏；1：双人游戏；2：设计地图；3：关于我们
         extern int selectedType;
     }
     namespace Debug {

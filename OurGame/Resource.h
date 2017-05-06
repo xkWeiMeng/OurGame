@@ -45,6 +45,7 @@ namespace Resource {
 		char*const Award = "Resources\\Texture\\½±Àø.bmp";
 		char*const GameOver = "Resources\\Texture\\ÓÎÏ·½áÊø.bmp";
 		char*const Shield = "Resources\\Texture\\¶ÜÅÆ.bmp";
-
+		char*const Hole = "Resources\\Texture\\¿×.bmp";
+		char*const Number = "Resources\\Texture\\Êı×Ö.bmp";
 	}
 }
