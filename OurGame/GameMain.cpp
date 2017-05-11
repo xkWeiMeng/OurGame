@@ -10,6 +10,9 @@ Scene *scene = NULL;
 //当前游戏状态
 GAME_STATE Game_State;
 
+//读取游戏设置
+bool ReadPlayerSettingInHD();
+
 // Startup and loading code goes here
 bool Game_Init(HWND window)
 {
@@ -27,8 +30,31 @@ bool Game_Init(HWND window)
         ShowMessage("Direct Sound 初始化失败");
         return false;
     }
+	//初始化声音资源
+	Sound::Sound_Init();
+	//
     GUI::Cursor::Init();
-
+	//
+	ReadPlayerSettingInHD();
+	//
+	Global::Window::Now_GAME_STATE = 0;
+	//声音开关
+	//Global::Sound::SoundSwicth = true;
+	//初始化玩家控制键  //完整版需要读取硬盘中的游戏配置
+	{
+		//玩家一
+		Global::PlayerControl::Player1[0] = VK_UP;
+		Global::PlayerControl::Player1[1] = VK_DOWN;
+		Global::PlayerControl::Player1[2] = VK_LEFT;
+		Global::PlayerControl::Player1[3] = VK_RIGHT;
+		Global::PlayerControl::Player1[4] = 0x58;
+		//玩家二
+		Global::PlayerControl::Player2[0] = 0x57;
+		Global::PlayerControl::Player2[1] = 0x53;
+		Global::PlayerControl::Player2[2] = 0x41;;
+		Global::PlayerControl::Player2[3] = 0x44;
+		Global::PlayerControl::Player2[4] = 0x4A;
+	}
     //切换到欢迎场景
     Game_ChangeScene(GAME_STATE::Home);
 
@@ -48,10 +74,12 @@ void Game_Update(HWND window)
     //执行当前场景的Update逻辑处理函数
     if (scene != NULL)
         scene->Update();
-
-    //检测退出键按下后退出游戏
-    if (Key_Down(DIK_ESCAPE))
-        PostMessage(window, WM_DESTROY, 0, 0);
+	//在主界面检测退出键按下后退出游戏
+	if (Global::Window::Now_GAME_STATE == 0)
+	{
+		if (Key_Up(DIK_ESCAPE))
+			PostMessage(window, WM_DESTROY, 0, 0);
+	}
 }
 
 /*
@@ -102,20 +130,29 @@ void Game_ChangeScene(GAME_STATE to)
         switch (to)
         {
         case GAME_STATE::Home:
+			Global::Window::Now_GAME_STATE = 0;
             scene = new HomeScene();
 			break;
 		case GAME_STATE::DoublePlayer:
         case GAME_STATE::SinglePlayer:
+			Global::Window::Now_GAME_STATE = 1;
 			scene = new GamingScene();
             break;
 		case GAME_STATE::DesignMap:
+			Global::Window::Now_GAME_STATE = 1;
 			scene = new DesignMapScene();
 			break;
         case GAME_STATE::About:
-            scene = new AboutScene();
+			Global::Window::Now_GAME_STATE = 1;
+			scene = new AboutScene();
             break;
+		case GAME_STATE::GameSatting:
+			Global::Window::Now_GAME_STATE = 1;
+			scene = new GameSettingScene();
+			break;
         default:
-            scene = NULL;
+			Global::Window::Now_GAME_STATE = 0;
+			scene = NULL;
             break;
         }
         //调用场景的初始化函数
@@ -141,4 +178,29 @@ void Game_Free(HWND window, HDC device)
     DirectSound_Shutdown();
     Direct3D_Shutdown();
     ReleaseDC(window, device);
+}
+//读取游戏设置
+bool ReadPlayerSettingInHD()
+{
+	char buf;
+	ifstream in("GameSet.set", ios::in | ios::binary);
+	if (!in.is_open())
+	{
+		ShowMessage("无法打开游戏的设置文件");
+		return false;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		in.read(&buf, 1);
+		Global::PlayerControl::Player1[i]=buf;
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		in.read(&buf, 1);
+		Global::PlayerControl::Player2[i]=buf;
+	}
+	in.read(&buf, 1);
+	Global::Sound::SoundSwicth=buf;
+	in.close();
+	return true;
 }

@@ -6,3 +6,4 @@
 #include"AboutScene.h"
 #include"GamingScene.h"
 #include "DesignMapScene.h"
+#include "GameSettingScene.h"

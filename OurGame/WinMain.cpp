@@ -76,15 +76,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	long MetricsX = ::GetSystemMetrics(SM_CXSCREEN);//获取显示器分辨率用于让窗口居中
 	long MetricsY = ::GetSystemMetrics(SM_CYSCREEN);
 	//create a new window
+	//根据用户屏幕分辨率分配游戏窗口大小
+	const float GameY_Screen_rate = 0.8888889;
+	const float GameY_GameX_rate = 0.9375;
+
+	int GameScreenHeight = MetricsY*GameY_Screen_rate;
+	int GameScreenWidth  = GameScreenHeight / GameY_GameX_rate;
+	Global::Window::ScreenHeight = GameScreenHeight;
+	Global::Window::ScreenWidth = GameScreenWidth;
 
     window = CreateWindow(
         Global::Window::GameTitle.c_str(),              //window class
         Global::Window::GameTitle.c_str(),              //title bar
         WS_OVERLAPPEDWINDOW,   //window style
-		MetricsX / 2 - Global::Window::ScreenWidth / 2,         //x position of window
-		MetricsY / 2 - Global::Window::ScreenHeight / 2,         //y position of window
-        Global::Window::ScreenWidth,                   //width of the window
-        Global::Window::ScreenHeight,                   //height of the window
+		MetricsX / 2 - GameScreenWidth / 2,         //x position of window
+		MetricsY / 2 - GameScreenHeight / 2,         //y position of window
+		GameScreenWidth,                   //width of the window
+		GameScreenHeight,                   //height of the window
         NULL,                  //parent window
         NULL,                  //menu
         hInstance,             //application instance

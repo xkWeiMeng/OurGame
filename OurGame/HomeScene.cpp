@@ -57,19 +57,21 @@ void HomeScene::Update()
     //{
     //    OutputDebugString("×ó¼üµ¥»÷");
     //}
+
     if (Key_Up(DIK_DOWN))
     {
         HomeScene::choose++;
-        HomeScene::choose %= 4;
+        HomeScene::choose %= 5;
     }
     if (Key_Up(DIK_UP))
     {
-        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 3;
-        HomeScene::choose %= 4;
+        HomeScene::choose = HomeScene::choose > 0 ? HomeScene::choose - 1 : 4;
+        HomeScene::choose %= 5;
     }
     if (Key_Up(DIK_SPACE))
     {
         Global::Home::selectedType = choose;
+		Global::Window::Now_GAME_STATE = 1;
         switch (choose)
         {
         case 0:
@@ -79,9 +81,13 @@ void HomeScene::Update()
 		case 2:
 			Game_ChangeScene(GAME_STATE::DesignMap);
 			break;
-        case 3:
+		case 3:
+			Game_ChangeScene(GAME_STATE::GameSatting);
+			break;
+        case 4:
             Game_ChangeScene(GAME_STATE::About);
             break;
+
         default:
             break;
         }
@@ -90,7 +96,7 @@ void HomeScene::Update()
 void HomeScene::Render()
 {
     HomeScene::Draw_Background();
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         FontPrint(font, 450, 700 + i * 40, Resource::Home::OptionsStr[i], i == HomeScene::choose ? Resource::Home::SelectedColor : Resource::Home::UnselectedColor);
     }
 }

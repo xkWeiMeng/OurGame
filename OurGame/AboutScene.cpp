@@ -24,11 +24,8 @@ bool AboutScene::Init()
 	Mountain = LoadTexture(Resource::About::BKG);
 	Feiting =LoadTexture(Resource::About::Feiting);
  //   return background != NULL;
-
-
-
-	Sound::Sound_Init();
-	LoopSound(Sound::BGM);
+	if (Global::Sound::SoundSwicth)
+		LoopSound(Sound::BGM);
 	return true;
 }
 
@@ -84,9 +81,10 @@ void AboutScene::Render()
 void AboutScene::Update()
 {
 	
-    if (Key_Up(DIK_SPACE))
-    {
-        Game_ChangeScene(GAME_STATE::Home);
-    }
+	if (Key_Up(DIK_ESCAPE))
+	{
+		Game_ChangeScene(GAME_STATE::Home);
+	}
+
 	SoTime = false;
 }

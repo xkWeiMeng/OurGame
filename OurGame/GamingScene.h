@@ -1,9 +1,11 @@
 #pragma once
 #include<fstream>
+#include<vector>
 #include"Scene.h"
 #include"DirectX.h"
 #include"Global.h"
 #include"Sound.h"
+#include"GameMain.h"
 enum Dirction {
 	up,
 	right,
@@ -19,11 +21,12 @@ public:
 	float MovedPixel;
 	unsigned long ID;
 	int BoomFlag;
-	bool Power;
-	Bullet(int,int ,int,int,int);//子弹初始化
+	int  PowerLevel;
+	Bullet(int,int ,int,int,int,int);//子弹初始化
 	bool Logic();//子弹碰撞检测
 	bool Draw();
-	bool Alive;
+	int FlickerFrame;
+	int LastFrametime;
 private:
 
 };
@@ -41,8 +44,6 @@ struct BulletListHead {
 class GamingScene:public Scene
 {
 public:
-	GamingScene();
-	~GamingScene();
 	virtual bool Init();
 	virtual void End();
 	virtual void Render();
@@ -62,15 +63,22 @@ public:
 	int Attack_Speed;//攻击速度
 	int Dir;//玩家方向
 	int Grade;//玩家等级
-	bool Shoot(int);
+	int PowerLevel;
+	bool Alive;//存在标志
+	bool FlashFlag;//闪光标志
+	bool Shoot(int,int);
 	bool Draw();
 	bool Logic(int);
 	bool GetHurt(int power);
+	void Born();
 };
 class Player2 :public Player
 {
 public:
+	Player2();
 	bool Draw();
+	bool Logic(int);
+	void Born();
 };
 class Enemy :public Player
 {

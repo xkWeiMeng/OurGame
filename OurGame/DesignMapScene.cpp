@@ -6,18 +6,23 @@ namespace DMS {
 	int NowMyChoose;
 	int NowPage;
 	bool IsDesigning;
-	string FileNameBuf;
 	void DrawNet();
 	void DrawMapPieceChoose(int choose);
 	void DrawMapPiece(int choose, int x, int y);
 	void DrawMap();
+	void UsingMouseChoose(RECT & mrect);
 	void DrawBlackRect(int x, int y);
 	void DesignMapName();
 	char ReadK_B();
 	bool WriteMapToHD(string filename);
 	void FillRect(RECT&rect, long l = -1, long r = -1, long t = -1, long b = -1);
+	string FileNameBuf;
+	RECT mouseRect;
 	LPD3DXFONT font;
 	LPD3DXFONT NumFont;
+	LPDIRECT3DTEXTURE9 Player_1 = NULL;
+	LPDIRECT3DTEXTURE9 Player_2 = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_TXTTURE = NULL;
 	LPDIRECT3DSURFACE9 BlackRect = NULL;
 	LPDIRECT3DTEXTURE9 Tile = NULL;
 }
@@ -49,12 +54,33 @@ bool DesignMapScene::Init()
 		ShowMessage("装载 砖 纹理失败!");
 		return false;
 	}
+	Enemy_TXTTURE = LoadTexture(Resource::Texture::Enemy, D3DCOLOR_XRGB(4, 4, 4));
+	if (!Enemy_TXTTURE)
+	{
+		ShowMessage("装载 敌人 纹理失败!");
+		return false;
+	}
+	Player_1 = LoadTexture(Resource::Texture::Player_1, D3DCOLOR_XRGB(0, 0, 0));
+	if (!Player_1)
+	{
+		ShowMessage("装载 主玩家 纹理失败!");
+		return false;
+	}
+	Player_2 = LoadTexture(Resource::Texture::Player_2, D3DCOLOR_XRGB(0, 0, 0));
+	if (!Player_2)
+	{
+		ShowMessage("装载 玩家二 纹理失败!");
+		return false;
+	}
 
 	return true;
 }
 
 void DesignMapScene::End()
 {
+	Player_2->Release();
+	Player_1->Release();
+	Enemy_TXTTURE->Release();
 	BlackRect->Release();
 	Tile->Release();
 	for (int i = 0; i < 13; i++)
@@ -75,6 +101,8 @@ void DesignMapScene::Update()
 			mY = mousePoint.y / 64 - 1;
 			if (mX >= 0 && mY >= 0 && mX <= 12 && mY <= 12)
 				Map[mY][mX]=NowMyChoose;
+			mouseRect = { mousePoint.x,mousePoint.y,mousePoint.x + 10,mousePoint.y + 10 };
+			UsingMouseChoose(mouseRect);
 		}
 		if (Mouse_Button(MRButton))
 		{
@@ -85,19 +113,20 @@ void DesignMapScene::Update()
 		}
 		//回车键保存地图并退回主页面
 		if (Key_Up(DIK_RETURN))
-		{
+		{		
 			WriteMapToHD(FileNameBuf);
+			Global::DesignMap::NewMapName = FileNameBuf;
 			Game_ChangeScene(GAME_STATE::Home);
 		}
 
 		if (Key_Up(DIK_UP))
 		{
-			NowMyChoose=NowMyChoose==1?30:NowMyChoose-1;
+			NowMyChoose=NowMyChoose==1?33:NowMyChoose-1;
 		}
 
 		if (Key_Up(DIK_DOWN))
 		{
-			NowMyChoose=NowMyChoose==30?1:NowMyChoose+1;
+			NowMyChoose=NowMyChoose==33?1:NowMyChoose+1;
 		}
 
 		if (Key_Up(DIK_LEFT))
@@ -159,7 +188,7 @@ void DesignMapScene::Update()
 		DesignMapName();
 	}
 
-	if (Key_Up(DIK_SPACE))
+	if (Key_Up(DIK_ESCAPE))
 	{
 		Game_ChangeScene(GAME_STATE::Home);
 	}
@@ -169,13 +198,14 @@ void DesignMapScene::Update()
 void DesignMapScene::Render()
 {
 	if (IsDesigning)
-	{		
-		DrawMap();
+	{			
 		DrawNet();
+		DrawMap();
 		//画当前选择的地图块并加黑方框凸显
 		DrawMapPiece(NowMyChoose, mousePoint.x+10, mousePoint.y+20);
 		DrawBlackRect(mousePoint.x+10, mousePoint.y+20);
 		DrawMapPieceChoose(MapPieceChoose);
+
 	}
 	else
 	{
@@ -215,7 +245,7 @@ void DMS::DesignMapName()
 			FileNameBuf.clear();
 		}
 		else {
-			FileNameBuf = buf;
+		//	FileNameBuf = buf;
 			IsDesigning = true;
 		}
 		return;
@@ -316,10 +346,15 @@ char DMS::ReadK_B()
 bool DMS::WriteMapToHD(string filename)
 {
 	char buf;
-	ofstream out(filename, ios::out | ios::binary);
+	string sbuf = "Map\\";
+	sbuf += FileNameBuf;
+	sbuf += ".map";
+
+	ofstream out(sbuf, ios::out | ios::binary);
 	if (!out.is_open())
 	{
-		ShowMessage(filename);
+		ShowMessage(sbuf);
+		out.close();
 	}
 	for (int i = 0; i < 13; i++)
 		for (int j = 0; j < 13; j++)
@@ -327,6 +362,7 @@ bool DMS::WriteMapToHD(string filename)
 			buf = Map[i][j];
 			out.write(&buf, 1);
 		}
+	out.close();
 	return 0;
 }
 
@@ -348,22 +384,22 @@ void DMS::DrawNet()
 
 	for (int i = 0; i < 12; i++)
 	{
-		FillRect(rect, 128 + i * 64, 129 + i * 64, 64, 896);
+		FillRect(rect, 128 + i * 64, 131 + i * 64, 64, 896);
 		d3dDev->StretchRect(BlackRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
 	}
 
 	for (int i = 0; i < 12; i++)
 	{
-		FillRect(rect, 64, 896, 128 + i * 64, 129 + i * 64);
+		FillRect(rect, 64, 896, 128 + i * 64, 131 + i * 64);
 		d3dDev->StretchRect(BlackRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
 	}
-	FillRect(rect, 64, 896, 64, 65);
+	FillRect(rect, 64, 896, 64, 67);
 	d3dDev->StretchRect(BlackRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
-	FillRect(rect, 64, 896, 895, 896);
+	FillRect(rect, 64, 896, 895, 899);
 	d3dDev->StretchRect(BlackRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
-	FillRect(rect, 64, 65, 64, 896);
+	FillRect(rect, 64, 67, 64, 896);
 	d3dDev->StretchRect(BlackRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
-	FillRect(rect, 895, 896, 64, 896);
+	FillRect(rect, 895, 899, 64, 896);
 	d3dDev->StretchRect(BlackRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
 
 }
@@ -467,6 +503,16 @@ void DMS::DrawMapPieceChoose(int choose)
 
 		DrawMapPiece(30, 928, 508);
 		DrawBlackRect(928, 508);
+
+		DrawMapPiece(31, 928, 592);
+		DrawBlackRect(928, 592);
+
+		DrawMapPiece(32, 928, 676);
+		DrawBlackRect(928, 676);
+
+		DrawMapPiece(33, 928, 760);
+		DrawBlackRect(928, 760);
+
 		break;
 	default:
 		break;
@@ -496,6 +542,16 @@ void DMS::DrawMapPiece(int choose,int x,int y)
 
 	case 30:Sprite_Transform_Draw(Tile, x, y,
 		32, 32, 5, 7, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
+	case 31:Sprite_Transform_Draw(Player_1, x, y, 28, 28,
+		0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
+	case 32:Sprite_Transform_Draw(Player_2, x, y, 28, 28,
+		0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
+	case 33:Sprite_Transform_Draw(Enemy_TXTTURE, x,y, 28, 28,
+		0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
 		//
 	case 1:Sprite_Transform_Draw(Tile, x, y,
 		16, 16, 0, 14, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
@@ -598,6 +654,15 @@ void DMS::DrawMap()
 			case 30:Sprite_Transform_Draw(Tile, (i + 1) * 64, (j + 1) * 64,
 				32, 32, 5, 7, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
 
+			case 31:Sprite_Transform_Draw(Player_1, (i + 1) * 64, (j + 1) * 64, 28, 28,
+				0,1, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
+			case 32:Sprite_Transform_Draw(Player_2, (i + 1) * 64, (j + 1) * 64, 28, 28,
+				0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
+			case 33:Sprite_Transform_Draw(Enemy_TXTTURE, (i + 1) * 64, (j + 1) * 64, 28, 28,
+				0, 1, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
+
 				//
 			case 1:Sprite_Transform_Draw(Tile, (i + 1) * 64, (j + 1) * 64,
 				16, 16, 0, 14, 0, 2, D3DCOLOR_XRGB(255, 255, 255)); break;
@@ -672,4 +737,193 @@ void DMS::DrawMap()
 				break;
 			}
 		}
+}
+//用鼠标选择地图块
+void DMS::UsingMouseChoose(RECT &mrect)
+{
+	RECT rect,nothing;
+	rect = { 928,256,992,256 + 64 };
+	if (IntersectRect(&nothing, &rect, &mrect))
+	{
+		switch (MapPieceChoose)
+		{
+		case 0:
+			NowMyChoose = 1;
+			break;
+		case 1:
+			NowMyChoose = 7;
+			break;
+		case 2:
+			NowMyChoose = 14;
+			break;
+		case 3:
+			NowMyChoose = 20;
+			break;
+		case 4:
+			NowMyChoose = 27;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
+	rect = { 928,256,992,340 + 64 };
+	if (IntersectRect(&nothing, &rect, &mrect))
+	{
+		switch (MapPieceChoose)
+		{
+		case 0:
+			NowMyChoose = 2;
+			break;
+		case 1:
+			NowMyChoose = 8;
+			break;
+		case 2:
+			NowMyChoose = 15;
+			break;
+		case 3:
+			NowMyChoose = 21;
+			break;
+		case 4:
+			NowMyChoose = 28;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
+	rect = { 928,256,992,424 + 64 };
+	if (IntersectRect(&nothing, &rect, &mrect))
+	{
+		switch (MapPieceChoose)
+		{
+		case 0:
+			NowMyChoose = 3;
+			break;
+		case 1:
+			NowMyChoose = 9;
+			break;
+		case 2:
+			NowMyChoose = 16;
+			break;
+		case 3:
+			NowMyChoose = 22;
+			break;
+		case 4:
+			NowMyChoose = 29;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
+	rect = { 928,256,992,508 + 64 };
+	if (IntersectRect(&nothing, &rect, &mrect))
+	{
+		switch (MapPieceChoose)
+		{
+		case 0:
+			NowMyChoose = 4;
+			break;
+		case 1:
+			NowMyChoose = 10;
+			break;
+		case 2:
+			NowMyChoose = 17;
+			break;
+		case 3:
+			NowMyChoose = 23;
+			break;
+		case 4:
+			NowMyChoose = 30;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
+	rect = { 928,256,992,592 + 64 };
+	if (IntersectRect(&nothing, &rect, &mrect))
+	{
+		switch (MapPieceChoose)
+		{
+		case 0:
+			NowMyChoose = 5;
+			break;
+		case 1:
+			NowMyChoose = 11;
+			break;
+		case 2:
+			NowMyChoose = 18;
+			break;
+		case 3:
+			NowMyChoose = 24;
+			break;
+		case 4:
+			NowMyChoose = 31;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
+	rect = { 928,256,992,676 + 64 };
+	if (IntersectRect(&nothing, &rect, &mrect))
+	{
+		switch (MapPieceChoose)
+		{
+		case 0:
+			NowMyChoose = 6;
+			break;
+		case 1:
+			NowMyChoose = 12;
+			break;
+		case 2:
+			NowMyChoose = 19;
+			break;
+		case 3:
+			NowMyChoose = 25;
+			break;
+		case 4:
+			NowMyChoose = 32;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
+	if (!(MapPieceChoose == 0 || MapPieceChoose == 2))
+	{
+		rect = { 928,256,992,760 + 64 };
+		if (IntersectRect(&nothing, &rect, &mrect))
+		{
+			switch (MapPieceChoose)
+			{
+			case 0:
+				NowMyChoose = 2;
+				break;
+			case 1:
+				NowMyChoose = 13;
+				break;
+			case 2:
+				NowMyChoose = 20;
+				break;
+			case 3:
+				NowMyChoose = 26;
+				break;
+			case 4:
+				NowMyChoose = 33;
+				break;
+			default:
+				break;
+			}
+			return;
+		}
+	}
 }
