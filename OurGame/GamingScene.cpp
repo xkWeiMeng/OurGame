@@ -23,7 +23,9 @@ namespace GS {
 	vector<int> BornPlayer1MapPiece;
 	vector<int> BornPlayer2MapPiece;
 	vector<int> BornEnemyMapPiece;
+	string NowMapName = "stage1";
 	unsigned long lasttime = 0;
+	int HaveBornEnemyNumber = 0;
 	int StartTime = 0, NowTime, SurplusTime = 0;
 	bool ShowTime = false;
 	bool GameOverFlag = false;
@@ -58,6 +60,9 @@ namespace GS {
 //	int  MinNumber(int m1, int m2, int m3, int m4, bool r1, bool r2, bool r3, bool r4);
 	void DIDA();
 	void NewStage();
+	void ReadNextMap();
+	void StartNextStage();
+	void RestartThisStage();
 	/*工具函数*/
 	BulletListHead bulletlisthead;//子弹链表头
 	EnemyListHead enemylisthead;//敌人链表头
@@ -68,7 +73,6 @@ namespace GS {
 	static unsigned long IDNumber = 0;
 	int EnemyXY[EnemyNumberMAX][2];//敌人位置坐标表
 	int Map[13][13]; //第一个是y轴，第二个是x轴
-
 }
 using namespace GS;
 /*--------------------------------------------------------------------
@@ -428,7 +432,10 @@ void GamingScene::Update()
 	}
 	if (!GameOverFlag) {
 		//检查敌人数量 判断是否胜利
-		//if()
+		if (EnemyNumber <= 0)
+		{
+			StartNextStage();
+		}
 		//玩家一
 		if (player.Alive)
 		{
@@ -523,7 +530,6 @@ void GamingScene::Update()
 		//生成新敌人
 		static int BornEnemy = 30;//生成敌人记时器
 		static int NeedBornEnemy = 1;
-		static int HaveBornEnemyNumber = 0;
 		if (NeedBornEnemy)
 			if (ShowTime)//ShowTime 100ms一次
 				BornEnemy++;
@@ -618,7 +624,7 @@ void GamingScene::Update()
 	{
 		if (KEY_DOWN(VK_RETURN))
 		{
-			NewStage();
+			RestartThisStage();
 			GameOverFlag = false;
 		}
 	}
@@ -1068,7 +1074,8 @@ bool GS::ReadMapInHD(string filename)
 	ifstream in(sbuf, ios::in | ios::binary);
 	if (!in.is_open())
 	{
-		ShowMessage(sbuf);
+		//ShowMessage("sd");
+		return false;
 	}
 	//从文件中读取地图信息
 	for (int i = 0; i < 13; i++)
@@ -1083,7 +1090,7 @@ bool GS::ReadMapInHD(string filename)
 			Map[i][j] = buf[i][j];
 		}
 
-	return 0;
+	return true;
 }
 bool GS::ReadMapInHD(char*filename)
 	{
@@ -1598,7 +1605,38 @@ void GS::NewStage()
 	player.Born();
 	player2.Alive = true;
 	player2.Born();
+	HaveBornEnemyNumber = 0;
+}
 
+void GS::ReadNextMap()
+{
+	//使当前地图文件名变为下一个文件名
+	string sbuf=NowMapName.substr(5,NowMapName.size());
+	int ibuf = atoi(sbuf.c_str());
+	ibuf++;
+	char cbuf[20];
+	_itoa_s(ibuf, cbuf, 10);
+	NowMapName.erase(5, NowMapName.size());
+	NowMapName += cbuf;
+	//
+	if(!ReadMapInHD(NowMapName))
+	{
+		Game_ChangeScene(GAME_STATE::Home);
+	}
+	//
+	CreateMapPiece();
+}
+
+void GS::StartNextStage()
+{
+	NewStage();
+	ReadNextMap();
+}
+
+void GS::RestartThisStage()
+{
+	NewStage();
+	CreateMapPiece();
 }
 /*--------------------------------------------------------------------
 GameScene的方法到此结束
@@ -2679,12 +2717,7 @@ bool Bullet::Draw()
 	}
 
 }
-//碰撞检测
-int PCrash()
-{
 
-	return 1 ;
-}
 /*--------------------------------------------------------------------
 Class MapPiece的方法
 ----------------------------------------------------------------------*/
