@@ -246,7 +246,7 @@ bool GamingScene::Init()
 	if (Global::DesignMap::NewMapName.length() != 0)
 		ReadMapInHD(Global::DesignMap::NewMapName);
 	else
-		ReadMapInHD("test");
+		ReadMapInHD(NowMapName);
 	//读取地图信息并创建地图块
 	CreateMapPiece();
 	//判断是否双人游戏
@@ -2006,7 +2006,7 @@ Player::Player()
 	player.height = 28;
 	BulletSpeed = 64*12;
 	FlickerFrame = 0;
-	Lift = 1;
+	Lift = 99;
 	PowerLevel = 0;
 	Alive = true;
 	FlashFlag = false;
