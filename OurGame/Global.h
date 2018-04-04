@@ -15,6 +15,7 @@ enum GAME_STATE
     Home = 1,
     //游戏场景
     SinglePlayer = 2,
+	//
 	DoublePlayer = 3,
 	//设计地图
 	DesignMap=4,

@@ -98,6 +98,7 @@ bool GamingScene::Init()
 		&GrayRect,
 		NULL
 	);
+	
 	if (result != D3D_OK)
 	{
 		ShowMessage("灰色-格子 初始化失败！");
