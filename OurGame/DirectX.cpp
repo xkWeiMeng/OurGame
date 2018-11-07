@@ -354,7 +354,7 @@ void ProcessInput(HWND hwnd)
     // 限制鼠标范围
     if (mousePoint.x < 0) { mousePoint.x = 0; }
     if (mousePoint.y < 0) { mousePoint.y = 0; }
-    /*
+    
     if (mousePoint.y < 0) {
     //标题栏检测
         if (mousePoint.y < -32) {
@@ -379,7 +379,7 @@ void ProcessInput(HWND hwnd)
             mousePoint.x = 0;
         }
     }
-    */
+    
 
     if (mousePoint.x > Global::Window::ScreenWidth) { mousePoint.x = Global::Window::ScreenWidth; }
     if (mousePoint.y > Global::Window::ScreenHeight) { mousePoint.y = Global::Window::ScreenHeight; }

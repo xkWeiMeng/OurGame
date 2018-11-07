@@ -2057,7 +2057,7 @@ bool Player::Draw()
 	Sprite_Transform_Draw(Number, 960, 544, 14, 14, Lift / 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	Sprite_Transform_Draw(Number, 993, 544, 14, 14, Lift % 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 
-
+	//2222222222222
 	if (ChangeFrame) {
 		Sprite_Transform_Draw(Player_1, player.x, player.y, player.width, player.height,
 			Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));

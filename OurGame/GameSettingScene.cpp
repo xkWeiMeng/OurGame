@@ -159,6 +159,7 @@ bool GSS::WritePlayerSettingIbHD()
 //É¨Ãè¼üÅÌ°´¼üĞÅÏ¢
 int GSS::ReadK_B()
 {
+
 	if (Key_Up(DIK_A))
 		return DIK_A;
 	if (Key_Up(DIK_B))

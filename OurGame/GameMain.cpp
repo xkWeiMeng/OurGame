@@ -159,6 +159,7 @@ void Game_ChangeScene(GAME_STATE to)
         if (scene == NULL || !scene->Init())
         {
             //如果场景初始化出错则结束游戏
+			//这里应弹出窗口说明出错
             EndApplication();
         }
         Game_State = to;
