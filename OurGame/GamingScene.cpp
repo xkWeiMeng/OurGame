@@ -314,8 +314,8 @@ bool GamingScene::Init()
 	//判断是否双人游戏
 	IsDoublePlayer = Global::Home::selectedType == 1 ? true : false;
 	//播放开始声音
-	if(Global::Sound::SoundSwicth)
-	Sound::Start->Play();
+	//if(Global::Sound::SoundSwicth)
+	//Sound::BGM->Play();
 	player.Born();
 	if (IsDoublePlayer)
 		player2.Born();
@@ -419,11 +419,11 @@ void GamingScene::Render()
 	//Sprite_Transform_Draw(Something, 960, 512, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	//Sprite_Transform_Draw(Something, 928, 544, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	//玩家二的信息
-	if (IsDoublePlayer) {
-		Sprite_Transform_Draw(Something, 928, 608, 14, 14, 4, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		Sprite_Transform_Draw(Something, 960, 608, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-		Sprite_Transform_Draw(Something, 928, 640, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-	}
+	//if (IsDoublePlayer) {
+	//	Sprite_Transform_Draw(Something, 928, 608, 14, 14, 4, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	//	Sprite_Transform_Draw(Something, 960, 608, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	//	Sprite_Transform_Draw(Something, 928, 640, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	//}
 	//画玩家一
 	if(player.Alive)
 	player.Draw();

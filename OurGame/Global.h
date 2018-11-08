@@ -26,7 +26,7 @@ enum GAME_STATE
 };
 namespace Global {
     namespace Window {
-        const string GameTitle = "Our Game";
+        const string GameTitle = "IG.WXZ";
 		extern int ScreenWidth;
 		extern int ScreenHeight ;
         //´°¿ÚµÄ×ø±ê
