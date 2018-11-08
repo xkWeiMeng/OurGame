@@ -47,7 +47,7 @@ namespace Global {
     }
     namespace Debug {
         //是否显示调试信息
-        const bool ShowDebugInfo = true;
+        const bool ShowDebugInfo = false;
         //当前总帧率
         extern int currentFPS;
     }

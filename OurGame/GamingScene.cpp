@@ -11,7 +11,16 @@ namespace GS {
 	LPDIRECT3DTEXTURE9 Player_1_L = NULL;
 	LPDIRECT3DTEXTURE9 Player_2 = NULL;
 	LPDIRECT3DTEXTURE9 Bullet_TXTTURE = NULL;
-	LPDIRECT3DTEXTURE9 Enemy_TXTTURE = NULL;
+	LPDIRECT3DTEXTURE9 Bullet_TXTTURE_mb = NULL;
+
+	LPDIRECT3DTEXTURE9 Enemy_EDG = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_RNG = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_KT = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_FNC = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_G2 = NULL;
+	LPDIRECT3DTEXTURE9 Enemy_C9 = NULL;
+
+	LPDIRECT3DTEXTURE9 Cup = NULL;
 	LPDIRECT3DTEXTURE9 Award = NULL;
 	LPDIRECT3DTEXTURE9 Boom1 = NULL;
 	LPDIRECT3DTEXTURE9 Boom2 = NULL;
@@ -140,6 +149,13 @@ bool GamingScene::Init()
 		ShowMessage("装载 砖 纹理失败!");
 		return false;
 	}
+	Cup = LoadTexture(Resource::Texture::Cup, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Cup)
+	{
+		ShowMessage("装载 Cup 纹理失败!");
+		return false;
+	}
+
 	Player_1 = LoadTexture(Resource::Texture::Player_1, D3DCOLOR_XRGB(255, 255, 255));
 	if (!Player_1)
 	{
@@ -152,10 +168,17 @@ bool GamingScene::Init()
 		ShowMessage("装载 主玩家_L 纹理失败!");
 		return false;
 	}
-	Bullet_TXTTURE = LoadTexture(Resource::Texture::Bullet, D3DCOLOR_XRGB(255, 255, 255));
+	Bullet_TXTTURE= LoadTexture(Resource::Texture::Bullet, D3DCOLOR_XRGB(0, 0, 0));
 	if (!Bullet_TXTTURE)
 	{
 		ShowMessage("装载 子弹 纹理失败!");
+		return false;
+	}
+
+	Bullet_TXTTURE_mb = LoadTexture(Resource::Texture::Bullet_mb, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Bullet_TXTTURE)
+	{
+		ShowMessage("装载 面包 纹理失败!");
 		return false;
 	}
 	Boom1 = LoadTexture(Resource::Texture::Boom1, D3DCOLOR_XRGB(0, 0, 0));
@@ -194,12 +217,43 @@ bool GamingScene::Init()
 		ShowMessage("装载 游戏结束 纹理失败!");
 		return false;
 	}
-	Enemy_TXTTURE = LoadTexture(Resource::Texture::Enemy, D3DCOLOR_XRGB(4, 4, 4));
-	if (!Enemy_TXTTURE)
+	Enemy_EDG = LoadTexture(Resource::Texture::Enemy_EDG, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Enemy_EDG)
 	{
-		ShowMessage("装载 敌人 纹理失败!");
+		ShowMessage("装载 EDG 纹理失败!");
 		return false;
 	}
+	Enemy_RNG = LoadTexture(Resource::Texture::Enemy_RNG, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Enemy_RNG)
+	{
+		ShowMessage("装载 RNG 纹理失败!");
+		return false;
+	}	
+	Enemy_KT = LoadTexture(Resource::Texture::Enemy_KT, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Enemy_KT)
+	{
+		ShowMessage("装载 KT 纹理失败!");
+		return false;
+	}	
+	Enemy_FNC = LoadTexture(Resource::Texture::Enemy_FNC, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Enemy_FNC)
+	{
+		ShowMessage("装载 FNC 纹理失败!");
+		return false;
+	}	
+	Enemy_C9 = LoadTexture(Resource::Texture::Enemy_C9, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Enemy_C9)
+	{
+		ShowMessage("装载 C9 纹理失败!");
+		return false;
+	}	
+	Enemy_G2 = LoadTexture(Resource::Texture::Enemy_G2, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Enemy_G2)
+	{
+		ShowMessage("装载 G2 纹理失败!");
+		return false;
+	}
+
 	Hole = LoadTexture(Resource::Texture::Hole, D3DCOLOR_XRGB(4, 4, 4));
 	if (!Hole)
 	{
@@ -343,7 +397,7 @@ void GamingScene::End()
 //游戏渲染
 void GamingScene::Render()
 {
-	d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+	d3dDev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(255, 255, 255), 1.0f, 0);
 
 	/*游戏边框*/
 	RECT rect;
@@ -356,14 +410,14 @@ void GamingScene::Render()
 	FillRect(rect, 0, 1024, 896, 928);
 	d3dDev->StretchRect(GrayRect, NULL, backBuffer, &rect, D3DTEXF_NONE);
 
-	DrawNet();//画网格，正式版删除
+//	DrawNet();//画网格，正式版删除
 			  /*游戏内容*/
 	spriteObj->Begin(D3DXSPRITE_ALPHABLEND);
-	Sprite_Transform_Draw(Flag, 926, 704, 32, 32, 0, 1, 0, 2.0, D3DCOLOR_XRGB(255, 255, 255));
-	//玩家一的信息
-	Sprite_Transform_Draw(Something, 928, 512, 14, 14, 2, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-	Sprite_Transform_Draw(Something, 960, 512, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-	Sprite_Transform_Draw(Something, 928, 544, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	//Sprite_Transform_Draw(Flag, 926, 704, 32, 32, 0, 1, 0, 2.0, D3DCOLOR_XRGB(255, 255, 255));
+	////玩家一的信息
+	//Sprite_Transform_Draw(Something, 928, 512, 14, 14, 2, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	//Sprite_Transform_Draw(Something, 960, 512, 14, 14, 3, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+	//Sprite_Transform_Draw(Something, 928, 544, 14, 14, 1, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	//玩家二的信息
 	if (IsDoublePlayer) {
 		Sprite_Transform_Draw(Something, 928, 608, 14, 14, 4, 6, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
@@ -476,7 +530,7 @@ void GamingScene::Update()
 
 				if (ShootTime > 10 / player.Attack_Speed)
 				{
-					player.Shoot(0, Player1.Grade);
+					player.Shoot(0, Player1.PowerLevel);
 					ShootTime = 0;
 				}
 
@@ -1700,34 +1754,45 @@ Enemy::Enemy(int x, int y, int speed, int hp,
 //敌人的渲染方法
 bool Enemy::Draw()
 {
-	if (Grade <= 3) {
-		if (MoveStage) {
-			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-				Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			MoveStage = !MoveStage;
-		}
-		else
-		{
-			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-				Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			MoveStage = !MoveStage;
-		}
-	}
-	else
+	switch (Grade)
 	{
-		if (MoveStage) {
-			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-				Dir * 8 + Grade * 2 + 24, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			MoveStage = !MoveStage;
-		}
-		else
-		{
-			Sprite_Transform_Draw(Enemy_TXTTURE, player.x, player.y, player.width, player.height,
-				Dir * 8 + Grade * 2 + 25, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			MoveStage = !MoveStage;
-		}
+	case 0:
+		Sprite_Transform_Draw(Enemy_EDG, player.x, player.y, 54, 55,
+			0, player.columns, Dir*0.5*3.14159, 1.1636, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	case 1:
+		Sprite_Transform_Draw(Enemy_RNG, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	case 2:
+		Sprite_Transform_Draw(Enemy_KT, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	case 3:
+		Sprite_Transform_Draw(Enemy_FNC, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	case 4:
+		Sprite_Transform_Draw(Enemy_G2, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	case 5:
+		Sprite_Transform_Draw(Enemy_C9, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+
+		break;
+	case 6:
+		Sprite_Transform_Draw(Enemy_RNG, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	case 7:
+		Sprite_Transform_Draw(Enemy_KT, player.x, player.y, 50, 50,
+			0, player.columns, Dir*0.5*3.14159, 1.28, D3DCOLOR_XRGB(255, 255, 255));
+		break;
+	default:
+		break;
 	}
-		return true;
+	return true;
 
 }
 //敌人逻辑
@@ -2702,14 +2767,14 @@ bool Bullet::Draw()
 	if (BoomFlag == 0) {
 		if (Shooter == 2) {
 			Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
-				170, 100, 0, 1, (Dir + 1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+				8, 8, Dir, 4, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 		}
 		else
 		{
 			Sprite_Transform_Draw(Bullet_TXTTURE_mb, bullet.x, bullet.y,
 				170, 100, 0, 1, (Dir + 1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
 		}
-		if (PowerLevel == 4)
+		if (PowerLevel != 0)
 		{
 			if (GetTickCount() > LastFrametime + 50)
 			{
@@ -2759,8 +2824,9 @@ void MapPiece::Draw()
 			Sprite_Transform_Draw(Tile, (X + 1) * 64 + (rp->rect->left-128)*2, (Y + 1) * 64 + rp->rect->top*2,
 				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
 		else if (rp->rect->left<192)
-			Sprite_Transform_Draw(Tile, (X + 1) * 64 + (rp->rect->left-160)*2, (Y + 1) * 64 + rp->rect->top*2,
-				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
+
+		Sprite_Transform_Draw(Cup, (X + 1) * 64 + (rp->rect->left - 160) * 2, (Y + 1) * 64 + rp->rect->top * 2,
+			64, 64, 0, 1, 0, 1, D3DCOLOR_XRGB(255, 255, 255));
 		else
 			Sprite_Transform_Draw(Tile, (X + 1) * 64 +( rp->rect->left-192)*2, (Y + 1) * 64 + rp->rect->top*2,
 				rp->rect, 0, 1, 0, 2, 2, D3DCOLOR_XRGB(255, 255, 255));
