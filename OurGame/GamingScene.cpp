@@ -8,6 +8,7 @@ namespace GS {
 	LPDIRECT3DTEXTURE9 Something = NULL;
 	LPDIRECT3DTEXTURE9 Tile = NULL;
 	LPDIRECT3DTEXTURE9 Player_1 = NULL;
+	LPDIRECT3DTEXTURE9 Player_1_L = NULL;
 	LPDIRECT3DTEXTURE9 Player_2 = NULL;
 	LPDIRECT3DTEXTURE9 Bullet_TXTTURE = NULL;
 	LPDIRECT3DTEXTURE9 Enemy_TXTTURE = NULL;
@@ -143,6 +144,12 @@ bool GamingScene::Init()
 	if (!Player_1)
 	{
 		ShowMessage("装载 主玩家 纹理失败!");
+		return false;
+	}
+	Player_1_L = LoadTexture(Resource::Texture::Player_1_L, D3DCOLOR_XRGB(255, 255, 255));
+	if (!Player_1_L)
+	{
+		ShowMessage("装载 主玩家_L 纹理失败!");
 		return false;
 	}
 	Bullet_TXTTURE = LoadTexture(Resource::Texture::Bullet, D3DCOLOR_XRGB(255, 255, 255));
@@ -2058,14 +2065,28 @@ bool Player::Draw()
 	Sprite_Transform_Draw(Number, 993, 544, 14, 14, Lift % 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 
 	if (ChangeFrame) {
-		Sprite_Transform_Draw(Player_1, player.x, player.y, 256, 256,
-			0, player.columns, (Dir+3)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		if(Dir==3)
+		{ 
+			Sprite_Transform_Draw(Player_1_L, player.x, player.y, 256, 256,
+				0, player.columns, 0, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		}
+		else {
+			Sprite_Transform_Draw(Player_1, player.x, player.y, 256, 256,
+				0, player.columns, (Dir - 1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		}
 		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
 			ChangeFrame = !ChangeFrame;
 	}
 	else {
-		Sprite_Transform_Draw(Player_1, player.x, player.y, 256, 256,
-			0, player.columns, (Dir + 3) * 3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		if (Dir == 3)
+		{
+			Sprite_Transform_Draw(Player_1_L, player.x, player.y, 256, 256,
+				0, player.columns, 0, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		}
+		else {
+			Sprite_Transform_Draw(Player_1, player.x, player.y, 256, 256,
+				0, player.columns, (Dir - 1) * 3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		}
 		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
 			ChangeFrame = !ChangeFrame;
 	}
