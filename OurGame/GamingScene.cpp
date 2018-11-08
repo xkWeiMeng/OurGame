@@ -2700,8 +2700,15 @@ bool Bullet::Logic()
 bool Bullet::Draw()
 {
 	if (BoomFlag == 0) {
-		Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
-			170, 100, 0, 1, (Dir+1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		if (Shooter == 2) {
+			Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
+				170, 100, 0, 1, (Dir + 1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		}
+		else
+		{
+			Sprite_Transform_Draw(Bullet_TXTTURE_mb, bullet.x, bullet.y,
+				170, 100, 0, 1, (Dir + 1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		}
 		if (PowerLevel == 4)
 		{
 			if (GetTickCount() > LastFrametime + 50)
