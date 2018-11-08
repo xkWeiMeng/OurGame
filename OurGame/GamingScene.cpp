@@ -139,13 +139,13 @@ bool GamingScene::Init()
 		ShowMessage("装载 砖 纹理失败!");
 		return false;
 	}
-	Player_1 = LoadTexture(Resource::Texture::Player_1, D3DCOLOR_XRGB(0, 0, 0));
+	Player_1 = LoadTexture(Resource::Texture::Player_1, D3DCOLOR_XRGB(255, 255, 255));
 	if (!Player_1)
 	{
 		ShowMessage("装载 主玩家 纹理失败!");
 		return false;
 	}
-	Bullet_TXTTURE = LoadTexture(Resource::Texture::Bullet, D3DCOLOR_XRGB(4, 4, 4));
+	Bullet_TXTTURE = LoadTexture(Resource::Texture::Bullet, D3DCOLOR_XRGB(255, 255, 255));
 	if (!Bullet_TXTTURE)
 	{
 		ShowMessage("装载 子弹 纹理失败!");
@@ -469,7 +469,7 @@ void GamingScene::Update()
 
 				if (ShootTime > 10 / player.Attack_Speed)
 				{
-					player.Shoot(0, 3);
+					player.Shoot(0, Player1.Grade);
 					ShootTime = 0;
 				}
 
@@ -1996,7 +1996,7 @@ Player::Player()
 	Speed = 5*64;
 	Attack_Speed = 5;
 	Dir = Dirction::up;
-	Grade = 3;
+	Grade = 1;
 	player.scaling = 2;
 	player.columns = 8; 
 	player.frame = 0;
@@ -2057,16 +2057,15 @@ bool Player::Draw()
 	Sprite_Transform_Draw(Number, 960, 544, 14, 14, Lift / 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 	Sprite_Transform_Draw(Number, 993, 544, 14, 14, Lift % 10, 10, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
 
-	//2222222222222
 	if (ChangeFrame) {
-		Sprite_Transform_Draw(Player_1, player.x, player.y, player.width, player.height,
-			Dir * 8 + Grade * 2, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		Sprite_Transform_Draw(Player_1, player.x, player.y, 256, 256,
+			0, player.columns, (Dir+3)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
 		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
 			ChangeFrame = !ChangeFrame;
 	}
 	else {
-		Sprite_Transform_Draw(Player_1, player.x, player.y, player.width, player.height,
-			Dir * 8 + Grade * 2 + 1, player.columns, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
+		Sprite_Transform_Draw(Player_1, player.x, player.y, 256, 256,
+			0, player.columns, (Dir + 3) * 3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
 		if (KEY_DOWN(VK_LEFT) || KEY_DOWN(VK_RIGHT) || KEY_DOWN(VK_UP) || KEY_DOWN(VK_DOWN))
 			ChangeFrame = !ChangeFrame;
 	}
@@ -2658,12 +2657,12 @@ bool Bullet::Logic()
 	{
 		if(PowerLevel==0)
 		AddUselessObj(ID);//记录对象ID用于销毁
-		//创建爆炸
+		//创建爆炸s
 		CreateBoom(bullet.x-20, bullet.y-20, 1, Dir);
 	}
 	if (result == 2)
 	{
-		if (PowerLevel == 0)
+		//if (PowerLevel == 0)
 			AddUselessObj(ID);
 	}
 	if (result == 3)
@@ -2680,35 +2679,18 @@ bool Bullet::Logic()
 bool Bullet::Draw()
 {
 	if (BoomFlag == 0) {
-		switch (Dir)
-		{
-		case Dirction::up:
-			Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
-				8, 8, 0, 4, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			break;
-		case Dirction::below:
-			Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
-				8, 8, 2, 4, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			break;
-		case Dirction::lift:
-			Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
-				8, 8, 3, 4, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			break;
-		case Dirction::right:
-			Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
-				8, 8, 1, 4, 0, 2, D3DCOLOR_XRGB(255, 255, 255));
-			break;
-		default:
-			break;
-		}
-		if (PowerLevel == 3)
+		Sprite_Transform_Draw(Bullet_TXTTURE, bullet.x, bullet.y,
+			170, 100, 0, 1, (Dir+1)*3.14159*0.5, 0.25, D3DCOLOR_XRGB(255, 255, 255));
+		if (PowerLevel == 4)
 		{
 			if (GetTickCount() > LastFrametime + 50)
 			{
 				FlickerFrame = FlickerFrame < 8 ? FlickerFrame + 1 : 0;
 				LastFrametime = GetTickCount();
 			}
-			Sprite_Draw_Frame(Flicker[FlickerFrame], bullet.x - 392, bullet.y - 292, 0, 800, 600, 1);
+	
+			Sprite_Transform_Draw(Flicker[FlickerFrame], bullet.x - 98, bullet.y - 73,
+				800, 600, 0, 1, 0, 0.25, D3DCOLOR_XRGB(255, 255, 255));
 		}
 		return true;
 	}
